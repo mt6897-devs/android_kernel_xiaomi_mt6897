@@ -1503,8 +1503,12 @@ endif
 
 ifneq ($(dtstree),)
 
-%.dtb: dtbs_prepare
-	$(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
+# Define order-only-prerequisites to avoid races in sub make
+$(filter %/dtbo.img, $(MAKECMDGOALS)): %/dtbo.img: | $(filter %.dtbo %.dtb dtbs,$(MAKECMDGOALS))
+$(filter %.dtbo, $(MAKECMDGOALS)): %.dtbo: | $(filter %.dtb dtbs,$(MAKECMDGOALS))
+
+%.dtb %/dtbo.img %.dtbo: include/config/kernel.release scripts_dtc
+	$(Q)$(MAKE) $(build)=$(dtstree)/$(@D) $(dtstree)/$@
 
 %.dtbo: dtbs_prepare
 	$(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
