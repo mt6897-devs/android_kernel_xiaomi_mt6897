@@ -121,10 +121,12 @@ static void init_smem_regions(struct ccci_smem_region *regions, phys_addr_t md_v
 		regions[i].base_md_view_phy = (phys_addr_t)md_phy;
 		regions[i].offset = (unsigned int)(regions[i].base_md_view_phy - md_view_base_phy);
 
+#if IS_ENABLED(CONFIG_MTK_AEE_IPANIC)
 		if (regions[i].id == SMEM_USER_RAW_MDSS_DBG)
 			mrdump_mini_add_extra_file((unsigned long)regions[i].base_ap_view_vir,
 				(unsigned long)regions[i].base_ap_view_phy, regions[i].size,
 				"EXTRA_MDSS");
+#endif
 	}
 }
 

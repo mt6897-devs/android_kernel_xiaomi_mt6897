@@ -189,8 +189,10 @@ extern u32 mt_irq_get_pending(unsigned int irq);
 extern int ccci_modem_init_common(struct platform_device *plat_dev,
 	struct ccci_dev_cfg *dev_cfg, struct md_hw_info *md_hw);
 
+#if IS_ENABLED(CONFIG_MTK_AEE_IPANIC)
 extern int mrdump_mini_add_extra_file(unsigned long vaddr, unsigned long paddr,
 	unsigned long size, const char *name);
+#endif
 #if IS_ENABLED(CONFIG_MTK_IRQ_DBG)
 extern void mt_irq_dump_status(unsigned int irq);
 #endif
