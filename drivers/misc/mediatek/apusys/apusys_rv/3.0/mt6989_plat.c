@@ -554,7 +554,6 @@ static bool pwr_on_fail_aee_triggered;
 static bool pwr_off_fail_aee_triggered;
 static int mt6989_cold_boot_power_on(struct mtk_apu *apu)
 {
-	struct device *dev = apu->dev;
 	int ret;
 
 	apu->ipi_pwr_ref_cnt[APU_IPI_INIT]++;
