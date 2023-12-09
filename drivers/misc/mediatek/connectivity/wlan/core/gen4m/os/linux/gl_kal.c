@@ -11141,35 +11141,24 @@ int32_t __weak kalSetCpuNumFreq(uint32_t u4CoreNum,
 	return 0;
 }
 
-int32_t __weak kalGetFwFlavorByPlat(uint8_t *flavor)
+const char* __weak kalGetFwFlavorByPlat(void)
 {
 	DBGLOG(SW4, TRACE, "NO firmware flavor build.\n");
-	return 0;
+	return NULL;
 }
 
-int32_t kalGetFwFlavor(uint8_t *flavor)
+const char* kalGetFwFlavor(void)
 {
-	struct mt66xx_hif_driver_data *prDriverData;
-	uint32_t u4StrLen = 0;
+	struct mt66xx_hif_driver_data *prDriverData = get_platform_driver_data();
+	const char *platFlavor = kalGetFwFlavorByPlat();
 
-	prDriverData = get_platform_driver_data();
-
-	if (prDriverData->fw_flavor) {
-		u4StrLen = kalStrLen(prDriverData->fw_flavor);
-		if (u4StrLen >= CFG_FW_FLAVOR_MAX_LEN) {
-			DBGLOG(SW4, WARN,
-				"get flavor length=%u over %u\n",
-				u4StrLen, CFG_FW_FLAVOR_MAX_LEN);
-			return WLAN_STATUS_FAILURE;
-		}
-
-		kalMemCopy(flavor, prDriverData->fw_flavor, u4StrLen);
-		DBGLOG(SW4, TRACE, "kalGetFwFlavor:%s (%u)\n",
-			flavor, u4StrLen);
-		return 1;
+	if (platFlavor) {
+		return platFlavor;
+	} else if (prDriverData->fw_flavor) {
+		return prDriverData->fw_flavor;
 	}
 
-	return kalGetFwFlavorByPlat(flavor);
+	return "";
 }
 
 int32_t __weak kalGetConnsysVerId(void)
