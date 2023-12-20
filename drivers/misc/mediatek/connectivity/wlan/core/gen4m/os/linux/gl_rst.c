@@ -57,7 +57,9 @@ wait_queue_head_t g_waitq_rst;
 struct completion g_RstOffComp;
 struct completion g_RstOnComp;
 struct completion g_triggerComp;
+#if defined(CONFIG_ANDROID) && (CFG_ENABLE_WAKE_LOCK)
 KAL_WAKE_LOCK_T *g_IntrWakeLock;
+#endif
 struct task_struct *wlan_reset_thread;
 u_int8_t g_IsWholeChipRst = FALSE;
 u_int8_t g_SubsysRstCnt;
@@ -306,7 +308,9 @@ void glResetInit(struct GLUE_INFO *prGlueInfo)
 
 #if CFG_WMT_RESET_API_SUPPORT
 	init_completion(&wifi_rst.halt_comp);
+#if defined(CONFIG_ANDROID) && (CFG_ENABLE_WAKE_LOCK)
 	KAL_WAKE_LOCK_INIT(NULL, g_IntrWakeLock, "WLAN Reset");
+#endif
 	init_waitqueue_head(&g_waitq_rst);
 	init_completion(&g_RstOffComp);
 	init_completion(&g_RstOnComp);
@@ -2082,8 +2086,10 @@ int wlan_reset_thread_main(void *data)
 	       KAL_GET_CURRENT_THREAD_NAME(), KAL_GET_CURRENT_THREAD_ID());
 
 	while (TRUE) {
+#if defined(CONFIG_ANDROID) && (CFG_ENABLE_WAKE_LOCK)
 		/* Unlock wakelock if hif_thread going to idle */
 		KAL_WAKE_UNLOCK(NULL, prWlanRstThreadWakeLock);
+#endif
 		/*
 		 * sleep on waitqueue if no events occurred. Event contain
 		 * (1) GLUE_FLAG_HALT (2) GLUE_FLAG_RST
@@ -2198,7 +2204,9 @@ void glRstSetRstEndEvent(void)
 {
 	struct RESET_STRUCT *rst = &wifi_rst;
 
+#if defined(CONFIG_ANDROID) && (CFG_ENABLE_WAKE_LOCK)
 	KAL_WAKE_LOCK(NULL, g_IntrWakeLock);
+#endif
 
 	set_bit(GLUE_FLAG_RST_END_BIT, &rst->ulFlag);
 
