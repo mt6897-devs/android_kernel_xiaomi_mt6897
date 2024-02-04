@@ -317,7 +317,6 @@ static void kbase_ipa_ctrl_rate_change_worker(struct work_struct *data)
 	spin_lock_irqsave(&kbdev->hwaccess_lock, flags);
 
 		if (!kbdev->pm.backend.gpu_ready) {
-#if IS_ENABLED(CONFIG_MALI_MIDGARD_DVFS) && IS_ENABLED(CONFIG_MALI_MTK_DVFS_POLICY)
 			u32 clk_rate_hz = (u32)atomic_read(&listener_data->rate);
 			dev_dbg(kbdev->dev,
 				"%s: backup clk rate:%u change while gpu power off", __func__,
@@ -327,9 +326,6 @@ static void kbase_ipa_ctrl_rate_change_worker(struct work_struct *data)
 			spin_lock(&ipa_ctrl->lock);
 			ipa_ctrl->cur_gpu_rate = clk_rate_hz;
 			spin_unlock(&ipa_ctrl->lock);
-#else
-			dev_err(kbdev->dev, "%s: GPU frequency cannot change while GPU is off", __func__);
-#endif /* CONFIG_MALI_MIDGARD_DVFS && CONFIG_MALI_MTK_DVFS_POLICY */
 			spin_unlock_irqrestore(&kbdev->hwaccess_lock, flags);
 			return;
 		}
@@ -364,8 +360,6 @@ static void kbase_ipa_ctrl_rate_change_worker(struct work_struct *data)
 	spin_unlock_irqrestore(&kbdev->hwaccess_lock, flags);
 }
 
-#if IS_ENABLED(CONFIG_MALI_MIDGARD_DVFS) && \
-		IS_ENABLED(CONFIG_MALI_MTK_DVFS_POLICY)
 static
 int kbase_ipa_control_rate_change_notify_ex(struct kbase_device *kbdev,
 					       u32 clk_index, u32 clk_rate_hz)
@@ -382,7 +376,6 @@ int kbase_ipa_control_rate_change_notify_ex(struct kbase_device *kbdev,
 	spin_unlock_irqrestore(&kbdev->hwaccess_lock, flags);
 	return 0;
 }
-#endif /* CONFIG_MALI_MIDGARD_DVFS && CONFIG_MALI_MTK_DVFS_POLICY */
 
 void kbase_ipa_control_init(struct kbase_device *kbdev)
 {
@@ -438,11 +431,7 @@ void kbase_ipa_control_init(struct kbase_device *kbdev)
 		kbase_clk_rate_trace_manager_subscribe_no_lock(
 			clk_rtm, &listener_data->listener);
 	spin_unlock_irqrestore(&clk_rtm->lock, flags);
-#if IS_ENABLED(CONFIG_MALI_MIDGARD_DVFS) && \
-	IS_ENABLED(CONFIG_MALI_MTK_DVFS_POLICY)
 	mtk_common_rate_change_notify_fp = kbase_ipa_control_rate_change_notify_ex;
-#endif /* CONFIG_MALI_MIDGARD_DVFS && CONFIG_MALI_MTK_DVFS_POLICY */
-
 }
 KBASE_EXPORT_TEST_API(kbase_ipa_control_init);
 

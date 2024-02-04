@@ -712,6 +712,7 @@ int gpufreq_power_control(enum gpufreq_power_state power)
 {
 	struct gpufreq_ipi_data send_msg = {};
 	int ret = GPUFREQ_SUCCESS;
+	unsigned int cur_gpu;
 
 	GPUFREQ_TRACE_START("power=%d", power);
 
@@ -746,12 +747,21 @@ int gpufreq_power_control(enum gpufreq_power_state power)
 	}
 
 done:
-	if (unlikely(ret < 0))
+	if (unlikely(ret < 0)) {
 		GPUFREQ_LOGE("fail to control power state: %s (%d)",
 			power ? "GPU_PWR_ON" : "GPU_PWR_OFF", ret);
+		goto fail;
+	}
 
 	raw_spin_unlock_irqrestore(&gpufreq_power_lock, g_pwr_irq_flags);
 
+	if (power == GPU_PWR_ON) {
+		/* Notify the IPA about the GPU frequency change. */
+		cur_gpu = gpufreq_get_cur_freq(TARGET_GPU);
+		mtk_notify_gpu_freq_change(0, cur_gpu);
+	}
+
+fail:
 	GPUFREQ_TRACE_END();
 
 	return ret;
@@ -828,6 +838,7 @@ int gpufreq_commit(enum gpufreq_target target, int oppidx)
 {
 	struct gpufreq_ipi_data send_msg = {};
 	int ret = GPUFREQ_SUCCESS;
+	unsigned int cur_gpu;
 
 	GPUFREQ_TRACE_START("target=%d, oppidx=%d", target, oppidx);
 
@@ -859,10 +870,17 @@ int gpufreq_commit(enum gpufreq_target target, int oppidx)
 	}
 
 done:
-	if (unlikely(ret))
+	if (unlikely(ret)) {
 		GPUFREQ_LOGE("fail to commit %s OPP index: %d (%d)",
 			target == TARGET_STACK ? "STACK" : "GPU", oppidx, ret);
+		goto fail;
+	}
 
+	/* Notify the IPA about the GPU frequency change. */
+	cur_gpu = gpufreq_get_cur_freq(TARGET_GPU);
+	mtk_notify_gpu_freq_change(0, cur_gpu);
+
+fail:
 	GPUFREQ_TRACE_END();
 
 	return ret;

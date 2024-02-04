@@ -33,6 +33,9 @@ int mtk_common_get_util_compute(void);
 int mtk_set_core_mask(u64 core_mask);
 #endif
 
+void MTKGPUFreq_change_notify(u32 clk_idx, u32 gpufreq);
+extern void (*mtk_notify_gpu_freq_change_fp)(u32 clk_idx, u32 gpufreq);
+
 #if IS_ENABLED(CONFIG_MALI_MIDGARD_DVFS) && IS_ENABLED(CONFIG_MALI_MTK_DVFS_POLICY)
 #if IS_ENABLED(CONFIG_MALI_MTK_DVFS_LOADING_MODE)
 extern void (*ged_dvfs_cal_gpu_utilization_ex_fp)(unsigned int *pui32Loading,
@@ -46,9 +49,6 @@ extern void (*ged_dvfs_gpu_freq_commit_fp)(unsigned long ui32NewFreqID,
 extern void (*ged_dvfs_gpu_freq_dual_commit_fp)(unsigned long gpuNewFreqID,
              unsigned long stackNewFreqID, int *pbCommited);
 #endif
-
-void MTKGPUFreq_change_notify(u32 clk_idx, u32 gpufreq);
-extern void (*mtk_notify_gpu_freq_change_fp)(u32 clk_idx, u32 gpufreq);
 
 extern int (*ged_dvfs_set_gpu_core_mask_fp)(u64 core_mask);
 
