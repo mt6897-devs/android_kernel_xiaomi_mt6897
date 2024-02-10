@@ -1,5 +1,5 @@
 subdir-ccflags-y += -Wall -Werror -DCONFIG_RT_REGMAP
-subdir-ccflags-y += -I$(srctree)/drivers/power/supply/
+subdir-ccflags-y += -I$(srctree)/drivers/power/supply/mediatek/
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/rt-regmap/
 subdir-ccflags-y += -I$(srctree)/drivers/mfd/
 ifneq ($(CONFIG_TCPC_CLASS), )
