@@ -2066,7 +2066,7 @@
  *       COUNTRY_CHANNEL_TXPOWER_LIMIT_TYPE_COMP_11AC_V2
  *------------------------------------------------------------------------------
  */
-#define CFG_SUPPORT_DYNA_TX_PWR_CTRL_11AC_V2_SETTING 0
+#define CFG_SUPPORT_DYNA_TX_PWR_CTRL_11AC_V2_SETTING 1
 
 /*------------------------------------------------------------------------------
  * Dynamic tx power control:
