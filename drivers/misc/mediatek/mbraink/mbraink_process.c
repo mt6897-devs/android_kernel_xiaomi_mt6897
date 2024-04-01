@@ -35,7 +35,7 @@
 #include <uapi/linux/android/binder.h>
 
 #include "mbraink_process.h"
-#include "../../../../../kernel-6.1/drivers/android/binder_internal.h"
+#include "../../../../../drivers/android/binder_internal.h"
 
 #define PROCESS_INFO_STR	\
 	"pid=%-10u:uid=%u,priority=%d,utime=%llu,stime=%llu,cutime=%llu,cstime=%llu,name=%s\n"
