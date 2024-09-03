@@ -2514,7 +2514,6 @@ irqreturn_t mtk_dsi_irq_status(int irq, void *dev_id)
 	if (status) {
 		writel(~status, dsi->regs + DSI_INTSTA);
 		if ((status & BUFFER_UNDERRUN_INT_FLAG)
-			&& (&mtk_crtc->force_high_step) != NULL
 			&& (atomic_read(&mtk_crtc->force_high_step) == 0)) {
 			unsigned long long aee_now_ts = sched_clock();
 			int trigger_aee = 0;
