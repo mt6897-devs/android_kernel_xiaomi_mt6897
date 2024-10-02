@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat
+
 obj-$(CONFIG_DRM_PANEL_ABT_Y030XX067A) += panel-abt-y030xx067a.o
 obj-$(CONFIG_DRM_PANEL_ARM_VERSATILE) += panel-arm-versatile.o
 obj-$(CONFIG_DRM_PANEL_ASUS_Z00T_TM5P5_NT35596) += panel-asus-z00t-tm5p5-n35596.o
@@ -26,6 +28,7 @@ obj-$(CONFIG_DRM_PANEL_LEADTEK_LTK050H3146W) += panel-leadtek-ltk050h3146w.o
 obj-$(CONFIG_DRM_PANEL_LEADTEK_LTK500HD1829) += panel-leadtek-ltk500hd1829.o
 obj-$(CONFIG_DRM_PANEL_LG_LB035Q02) += panel-lg-lb035q02.o
 obj-$(CONFIG_DRM_PANEL_LG_LG4573) += panel-lg-lg4573.o
+obj-$(CONFIG_DRM_PANEL_N11A_42_02_0A_DSC_VDO) += panel-n11a-42-02-0a-dsc-vdo.o
 obj-$(CONFIG_DRM_PANEL_NEC_NL8048HL11) += panel-nec-nl8048hl11.o
 obj-$(CONFIG_DRM_PANEL_NEWVISION_NV3052C) += panel-newvision-nv3052c.o
 obj-$(CONFIG_DRM_PANEL_NOVATEK_NT35510) += panel-novatek-nt35510.o
@@ -73,3 +76,52 @@ obj-$(CONFIG_DRM_PANEL_TRULY_NT35597_WQXGA) += panel-truly-nt35597.o
 obj-$(CONFIG_DRM_PANEL_VISIONOX_RM69299) += panel-visionox-rm69299.o
 obj-$(CONFIG_DRM_PANEL_WIDECHIPS_WS2401) += panel-widechips-ws2401.o
 obj-$(CONFIG_DRM_PANEL_XINPENG_XPP055C272) += panel-xinpeng-xpp055c272.o
+
+mediatek-drm-gateic-y := mtk_drm_panel_i2c.o \
+		  mtk_drm_gateic_rt4801h.o \
+		  mtk_drm_gateic_rt4831a.o \
+		  mtk_drm_gateic.o
+
+mediatek-drm-panel-drv-y :=  \
+		  mtk_round_corner/mtk_drm_rc.o \
+		  mtk_drm_panel_helper.o \
+		  mtk_drm_panel_helper_dbi.o \
+		  mtk_drm_panel_helper_dpi.o \
+		  mtk_drm_panel_helper_dsi.o \
+		  mtk_drm_panel_drv_dbi.o \
+		  mtk_drm_panel_drv_dpi.o \
+		  mtk_drm_panel_drv_dsi.o \
+		  mtk_drm_panel_drv.o
+
+mediatek-cust-panel-sample-y :=  \
+		  cust_panel/mtk_cust_panel_sample/mtk_drm_panel_cust.o \
+		  cust_panel/cust_lcm_hal.o
+
+
+obj-$(CONFIG_DRM_MEDIATEK_PANEL) += mediatek-drm-gateic.o
+obj-$(CONFIG_DRM_MEDIATEK_PANEL) += mediatek-drm-panel-drv.o
+obj-$(CONFIG_DRM_MEDIATEK_PANEL) += mediatek-cust-panel-sample.o
+
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/dramc/$(MTK_PLATFORM)	\
+             -I$(srctree)/drivers/misc/mediatek/smi/			\
+             -I$(srctree)/drivers/misc/mediatek/mmp/			\
+             -I$(srctree)/drivers/misc/mediatek/mmdvfs/			\
+             -I$(srctree)/drivers/misc/mediatek/pmic/			\
+             -I$(srctree)/drivers/iommu/				\
+             -I$(srctree)/drivers/devfreq/				\
+             -I$(srctree)/drivers/gpu/drm/				\
+             -I$(srctree)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include/mach/ \
+             -I$(srctree)/drivers/misc/mediatek/include/mt-plat/ \
+             -I$(srctree)/drivers/misc/mediatek/leds/ \
+             -I$(srctree)/drivers/misc/mediatek/leds/$(MTK_PLATFORM) \
+             -I$(srctree)/drivers/misc/mediatek/cmdq/mailbox/ \
+             -I$(srctree)/drivers/misc/mediatek/iommu/ \
+             -I$(srctree)/drivers/misc/mediatek/mtk-interconnect/ \
+             -I$(srctree)/drivers/misc/mediatek/slbc/ \
+             -I$(srctree)/drivers/misc/mediatek/cmdq/mailbox/ \
+             -I$(srctree)/drivers/misc/mediatek/clkbuf/v1/inc/ \
+             -I$(srctree)/drivers/misc/mediatek/scp/include/ \
+             -I$(srctree)/drivers/gpu/drm/mediatek/mediatek_v2/mi_disp/ \
+             -I$(srctree)/drivers/gpu/drm/mediatek/mediatek_v2/ \
+
+ccflags-$(CONFIG_DRM_MEDIATEK_PANEL) += -I$(srctree)/drivers/leds/
