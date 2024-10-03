@@ -151,6 +151,17 @@ config ARM_SUN8I_A33_MBUS_DEVFREQ
 	  This adds the DEVFREQ driver for the MBUS controller in some
 	  Allwinner sun8i (A33 through H3) and sun50i (A64 and H5) SoCs.
 
+config MTK_DVFSRC_DEVFREQ
+	tristate "MediaTek DVFSRC DEVFREQ Driver"
+	depends on (MTK_DVFSRC && HAVE_ARM_SMCCC) || \
+		(COMPILE_TEST && MTK_DVFSRC && HAVE_ARM_SMCCC)
+	select DEVFREQ_GOV_USERSPACE
+	help
+	  This adds the DEVFREQ driver for the MediaTek DVFSRC
+	  (dynamic voltage and frequency scaling resource collector).
+	  The driver support to request dram frequency by DVFSRC and
+	  user can adjust dram frequency on userspace.
+
 source "drivers/devfreq/event/Kconfig"
 
 endif # PM_DEVFREQ
