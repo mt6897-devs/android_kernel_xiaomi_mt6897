@@ -119,6 +119,8 @@ config INPUT_ATMEL_CAPTOUCH
 	  To compile this driver as a module, choose M here: the
 	  module will be called atmel_captouch.
 
+source "drivers/input/misc/aw_haptic/Kconfig"
+
 config INPUT_BMA150
 	tristate "BMA150/SMB380 acceleration sensor support"
 	depends on I2C
@@ -197,6 +199,8 @@ config INPUT_SPARCSPKR
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called sparcspkr.
+
+source "drivers/input/misc/si_haptic/Kconfig"
 
 config INPUT_M68K_BEEP
 	tristate "M68k Beeper support"
