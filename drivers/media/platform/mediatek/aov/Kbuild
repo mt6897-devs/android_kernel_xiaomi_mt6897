@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+subdir-ccflags-y += -Werror
+
+# PATH
+ccflags-y += -I$(srctree)/drivers/media/platform/mtk-isp
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/include
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/scp/include
+ccflags-y += -I$(srctree)/drivers/dma-buf/heaps
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/slbc
+ccflags-y += -I$(srctree)/include/linux/soc/mediatek
+
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/geniezone/include
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/geniezone/public
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/memory-ssmr
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/trusted_mem/public
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/trusted_mem/ssmr
+
+mtk_aov-objs := \
+	mtk-aov-drv.o \
+	mtk-aov-core.o \
+	mtk-aov-trace.o \
+	mtk-aov-aee.o \
+	mtk-aov-queue.o \
+	mtk-aov-mtee.o \
+	mtk-aie-model.o \
+	mtk-fld-model.o \
+	alloc/tlsf/tlsf_alloc.o
+
+obj-${CONFIG_VIDEO_MTK_ISP_AOV} += mtk_aov.o

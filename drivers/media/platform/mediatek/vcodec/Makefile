@@ -1,46 +1,79 @@
-# SPDX-License-Identifier: GPL-2.0
+#ifneq ($(MTK_VCODEC_PLATFORM),)
 
-obj-$(CONFIG_VIDEO_MEDIATEK_VCODEC) += mtk-vcodec-dec.o \
-				       mtk-vcodec-enc.o \
-				       mtk-vcodec-common.o \
-				       mtk-vcodec-dec-hw.o
+obj-$(CONFIG_DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC) += mtk-vcodec-common.o
 
-mtk-vcodec-dec-y := vdec/vdec_h264_if.o \
-		vdec/vdec_vp8_if.o \
-		vdec/vdec_vp8_req_if.o \
-		vdec/vdec_vp9_if.o \
-		vdec/vdec_vp9_req_lat_if.o \
-		vdec/vdec_h264_req_if.o \
-		vdec/vdec_h264_req_common.o \
-		vdec/vdec_h264_req_multi_if.o \
-		mtk_vcodec_dec_drv.o \
+mtk-vcodec-dec-$(CONFIG_VIDEO_MEDIATEK_VCU) += vdec/vdec_common_if.o \
+		vdec/vdec_vcu_if.o
+
+mtk-vcodec-enc-$(CONFIG_VIDEO_MEDIATEK_VCU) += venc/venc_common_if.o \
+		venc/venc_vcu_if.o
+
+mtk-vcodec-dec-$(CONFIG_MTK_TINYSYS_VCP_SUPPORT) += vdec/vdec_vcp_if.o
+mtk-vcodec-enc-$(CONFIG_MTK_TINYSYS_VCP_SUPPORT) += venc/venc_vcp_if.o
+
+mtk-vcodec-dec-$(CONFIG_DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC) += mtk_vcodec_dec_drv.o \
 		vdec_drv_if.o \
-		vdec_vpu_if.o \
-		vdec_msg_queue.o \
 		mtk_vcodec_dec.o \
-		mtk_vcodec_dec_stateful.o \
-		mtk_vcodec_dec_stateless.o \
 		mtk_vcodec_dec_pm.o \
+		mtk_vcodec_dec_slc.o
 
-mtk-vcodec-dec-hw-y := mtk_vcodec_dec_hw.o
-
-mtk-vcodec-enc-y := venc/venc_vp8_if.o \
-		venc/venc_h264_if.o \
-		mtk_vcodec_enc.o \
-		mtk_vcodec_enc_drv.o \
-		mtk_vcodec_enc_pm.o \
+mtk-vcodec-enc-$(CONFIG_DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC) += mtk_vcodec_enc_drv.o \
 		venc_drv_if.o \
-		venc_vpu_if.o \
+		mtk_vcodec_enc.o \
+		mtk_vcodec_enc_pm.o
 
-
-mtk-vcodec-common-y := mtk_vcodec_intr.o \
+mtk-vcodec-common-$(CONFIG_DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC) += mtk_vcodec_intr.o \
 		mtk_vcodec_util.o \
-		mtk_vcodec_fw.o \
+		mtk_vcodec_fence.o
 
-ifneq ($(CONFIG_VIDEO_MEDIATEK_VCODEC_VPU),)
-mtk-vcodec-common-y += mtk_vcodec_fw_vpu.o
+ifeq ($(CONFIG_VIDEO_MEDIATEK_VCODEC_V1),y)
+	obj-$(CONFIG_DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC) += mtk-vcodec-dec-v1.o \
+	                       mtk-vcodec-enc-v1.o
+
+	mtk-vcodec-dec-v1-$(CONFIG_DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC) += \
+			v1/mtk_vcodec_dec_pm_plat.o \
+			v1/vcodec_dvfs.o
+
+	mtk-vcodec-enc-v1-$(CONFIG_DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC) += \
+			v1/mtk_vcodec_enc_pm_plat.o \
+			v1/vcodec_dvfs.o
+
+	mtk-vcodec-dec-v1-$(CONFIG_DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC) += $(mtk-vcodec-dec-m) $(mtk-vcodec-dec-y)
+	mtk-vcodec-enc-v1-$(CONFIG_DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC) += $(mtk-vcodec-enc-m) $(mtk-vcodec-enc-y)
 endif
 
-ifneq ($(CONFIG_VIDEO_MEDIATEK_VCODEC_SCP),)
-mtk-vcodec-common-y += mtk_vcodec_fw_scp.o
+ifeq ($(CONFIG_VIDEO_MEDIATEK_VCODEC_V2),y)
+	obj-$(CONFIG_DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC) += mtk-vcodec-dec-v2.o \
+	                       mtk-vcodec-enc-v2.o
+
+	mtk-vcodec-dec-v2-$(CONFIG_DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC) += \
+			v2/mtk_vcodec_dec_pm_plat.o \
+			v2/vcodec_dvfs.o
+
+	mtk-vcodec-enc-v2-$(CONFIG_DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC) += \
+			v2/mtk_vcodec_enc_pm_plat.o \
+			v2/vcodec_dvfs.o
+
+	mtk-vcodec-dec-v2-$(CONFIG_DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC) += $(mtk-vcodec-dec-m) $(mtk-vcodec-dec-y)
+	mtk-vcodec-enc-v2-$(CONFIG_DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC) += $(mtk-vcodec-enc-m) $(mtk-vcodec-enc-y)
 endif
+
+subdir-ccflags-y += -Werror
+ccflags-y += -I$(srctree)/drivers/media/platform/mediatek/vcu
+ccflags-y += -I$(srctree)/drivers/media/platform/mediatek/vcodec
+ccflags-y += -I$(srctree)/drivers/media/platform/mediatek/videobuf
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/slbc
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/smi
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/iommu
+ccflags-y += -I$(srctree)/drivers/iommu
+ccflags-y += -I$(srctree)/arch/arm
+ccflags-y += -I$(srctree)/drivers/staging/android/ion
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/mtk-interconnect
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/vcp/rv
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/vcp/include
+ccflags-y += -I$(srctree)/drivers/dma-buf/heaps
+ccflags-y += -I$(srctree)/drivers/iommu/arm/arm-smmu-v3
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/sched/eas
+
+#endif

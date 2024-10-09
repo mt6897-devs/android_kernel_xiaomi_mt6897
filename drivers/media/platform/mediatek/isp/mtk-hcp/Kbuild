@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Support GKI mixed build
+IMGSYS_HCP_MODULE := mtk_hcp
+
+subdir-ccflags-y += -Werror
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/m4u/2.4
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/m4u/$(MTK_PLATFORM)
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/mtk-interconnect/
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/iommu/
+ccflags-y += -I$(srctree)/drivers/media/platform/mediatek/isp/imgsys/
+ccflags-y += -I$(srctree)/include/media
+
+ifeq ($(CONFIG_MTK_ION),y)
+    ccflags-y += -I$(srctree)/drivers/staging/android/mtk_ion/
+    ccflags-y  += -I$(srctree)/drivers/staging/android/mtk_ion/mtk/
+else
+    ccflags-$(CONFIG_ION) += -I$(srctree)/drivers/staging/android/aosp_ion/
+endif
+
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include/ \
+             -I$(srctree)/drivers/misc/mediatek/include/mt-plat/ \
+             -I$(srctree)/drivers/misc/mediatek/include/ \
+             -I$(srctree)/drivers/misc/mediatek/slbc/ \
+             -I$(srctree)/drivers/dma-buf/heaps/ \
+             -I$(srctree)/drivers/iommu
+
+$(IMGSYS_HCP_MODULE)-objs := \
+mtk-hcp.o \
+mtk-hcp_isp71.o \
+mtk-hcp_isp7s.o \
+mtk-hcp_kernelfence.o \
+mtk-hcp_isp7sp.o
+#mem/hcp_videobuf2-memops.o \
+#mem/hcp_videobuf2-vmalloc.o \
+#mem/hcp_videobuf2-dma-contig.o
+
+obj-${CONFIG_VIDEO_MTK_ISP_HCP} += $(IMGSYS_HCP_MODULE).o

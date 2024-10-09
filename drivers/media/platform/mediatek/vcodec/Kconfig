@@ -5,26 +5,21 @@ config VIDEO_MEDIATEK_VCODEC_SCP
 config VIDEO_MEDIATEK_VCODEC_VPU
 	bool
 
-config VIDEO_MEDIATEK_VCODEC
+config DEVICE_MODULES_VIDEO_MEDIATEK_VCODEC
 	tristate "Mediatek Video Codec driver"
-	depends on V4L_MEM2MEM_DRIVERS
-	depends on MTK_IOMMU || COMPILE_TEST
+	depends on DEVICE_MODULES_MTK_IOMMU || COMPILE_TEST
 	depends on VIDEO_DEV
 	depends on ARCH_MEDIATEK || COMPILE_TEST
-	depends on VIDEO_MEDIATEK_VPU || MTK_SCP
+	depends on VIDEO_MEDIATEK_VPU || MTK_SCP || MTK_TINYSYS_VCP_SUPPORT || VIDEO_MEDIATEK_VCU
 	# The two following lines ensure we have the same state ("m" or "y") as
 	# our dependencies, to avoid missing symbols during link.
 	depends on VIDEO_MEDIATEK_VPU || !VIDEO_MEDIATEK_VPU
 	depends on MTK_SCP || !MTK_SCP
-	depends on MTK_SMI || (COMPILE_TEST && MTK_SMI=n)
+	depends on MTK_TINYSYS_VCP_SUPPORT || !MTK_TINYSYS_VCP_SUPPORT
+	depends on DEVICE_MODULES_MTK_SMI || (COMPILE_TEST && DEVICE_MODULES_MTK_SMI=n)
 	select VIDEOBUF2_DMA_CONTIG
 	select V4L2_MEM2MEM_DEV
-	select VIDEO_MEDIATEK_VCODEC_VPU if VIDEO_MEDIATEK_VPU
-	select VIDEO_MEDIATEK_VCODEC_SCP if MTK_SCP
-	select V4L2_H264
-	select V4L2_VP9
-	select MEDIA_CONTROLLER
-	select MEDIA_CONTROLLER_REQUEST_API
+	select VB2_MEDIATEK_DMA_CONTIG
 	help
 	  Mediatek video codec driver provides HW capability to
 	  encode and decode in a range of video formats on MT8173
@@ -35,3 +30,33 @@ config VIDEO_MEDIATEK_VCODEC
 
 	  To compile this driver as modules, choose M here: the
 	  modules will be called mtk-vcodec-dec and mtk-vcodec-enc.
+
+config MTK_TINYSYS_VCP_SUPPORT
+	tristate "Mediatek VCP driver"
+	help
+	  Mediatek video kernel driver for micro-P.
+
+	  The driver support control and communicate vcp and allocate,
+	  free memory, etc.
+
+	  To compile this driver as modules, choose M here: the
+	  modules will be called vcp and vcp_status.
+
+config VIDEO_MEDIATEK_VCODEC_V1
+	bool "Specify Mediatek Video Vcodec Platform V1"
+	depends on MTK_LOW_POWER_MODULE
+	help
+	  Select MediaTek Video Vcodec Platform V1
+	  v1 folder is dvfs setting for policy 1
+	  Set Y to select this feature for specific platform-V1.
+	  If unsure, set N to disable.
+
+config VIDEO_MEDIATEK_VCODEC_V2
+	bool "Specify Mediatek Video Vcodec Platform V2"
+	depends on MTK_LOW_POWER_MODULE
+	help
+	  Select MediaTek Video Vcodec Platform V2
+	  v2 folder is dvfs setting for policy 2
+	  Set Y to select this feature for specific platform-V2.
+	  If unsure, set N to disable.
+

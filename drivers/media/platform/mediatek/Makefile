@@ -1,6 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
+obj-y += aie/
+obj-y += aov/
+obj-y += dpe/
+obj-y += isp/
 obj-y += jpeg/
 obj-y += mdp/
 obj-y += vcodec/
+obj-y += vcu/
+obj-y += videobuf/
 obj-y += vpu/
 obj-y += mdp3/

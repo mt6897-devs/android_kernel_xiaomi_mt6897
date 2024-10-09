@@ -1,0 +1,10 @@
+config VIDEO_MEDIATEK_VCU
+	tristate "Mediatek VCU driver"
+	help
+	  Mediatek video kernel driver for user space vpud.
+
+	  The driver support communicate with user space video driver vpud
+	  and allocate, free memory, etc.
+
+	  To compile this driver as modules, choose M here: the
+	  modules will be called mtk-vcu.

@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+AIE_MODULE := mtk_aie
+
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/mtk-interconnect/
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/cmdq/mailbox/
+ccflags-y += -I$(srctree)/drivers/dma-buf/heaps/
+ccflags-y += -I$(srctree)/drivers/media/platform/mediatek/videobuf/
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/imgsys/
+ccflags-y += -I$(srctree)/drivers/iommu
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/iommu
+
+ifneq ($(wildcard $(srctree)/include/dt-bindings/memory/mt6897-larb-port.h),)
+ccflags-y += -DAIE_TF_DUMP_7SP
+endif
+
+ifneq ($(wildcard $(srctree)/include/dt-bindings/memory/mt6989-larb-port.h),)
+ccflags-y += -DAIE_TF_DUMP_7SP_1
+endif
+
+$(AIE_MODULE)-objs := \
+mem/aie_videobuf2-dma-contig.o\
+mem/aie_videobuf2-memops.o\
+mem/aie_videobuf2-vmalloc.o\
+mtk_aie_53.o\
+mtk_aie_drv_isp7s.o \
+mtk_aie_drv_isp7sp.o
+
+obj-$(CONFIG_MTK_CAMERA_FD_ISP7S_ISP7SP) += $(AIE_MODULE).o
+obj-$(CONFIG_MTK_CAMERA_FD_ISP7S_ISP7SP) += mtk_aie_debug_7sp.o
+obj-$(CONFIG_MTK_CAMERA_FD_ISP7S_ISP7SP) += mtk_aie_debug_7sp_1.o
