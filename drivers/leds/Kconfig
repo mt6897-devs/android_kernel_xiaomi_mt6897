@@ -40,6 +40,38 @@ config LEDS_CLASS_MULTICOLOR
 	  for multicolor LEDs that are grouped together. This class is not
 	  intended for single color LEDs. It can be built as a module.
 
+config LEDS_MTK
+	tristate "Mediatek COMMON LED support"
+	depends on LEDS_CLASS
+	help
+	  This option enables support for Mediatek common LEDs
+	  say 'y' to enable this
+
+	  To compile this driver as a module, choose 'M' here: the module
+	  will be called leds-mtk.
+
+config LEDS_MTK_PWM
+	tristate "Mediatek pwm LED support"
+	depends on LEDS_CLASS && LEDS_MTK
+	depends on DEVICE_MODULES_PWM_MTK_DISP
+	help
+	  This option enables support for Mediatek pwm LEDs.
+	  say 'y' to enable this
+
+	  To compile this driver as a module, choose 'M' here: the module
+	  will be called leds-mtk-pwm.
+
+config LEDS_MTK_DISP
+	tristate "Mediatek DISP LED support"
+	depends on LEDS_CLASS && LEDS_MTK
+	depends on MTK_CMDQ_MBOX_EXT
+	help
+	  This option enables support for Mediatek OLED Display LEDs
+	  say 'y' to enable this
+
+	  To compile this driver as a module, choose 'M' here: the module
+	  will be called leds-mtk-disp.
+
 config LEDS_BRIGHTNESS_HW_CHANGED
 	bool "LED Class brightness_hw_changed attribute support"
 	depends on LEDS_CLASS
@@ -48,6 +80,26 @@ config LEDS_BRIGHTNESS_HW_CHANGED
 	  for LED sysfs class devices under /sys/class/leds.
 
 	  See Documentation/ABI/testing/sysfs-class-led for details.
+
+config LEDS_MT_BRIGHTNESS_HW_CHANGED
+	bool "LED Class mt_brightness_hw_changed attribute support"
+	depends on LEDS_CLASS
+	help
+	  This option enables support for the mt_brightness_hw_changed attribute
+	  for LED sysfs class devices under /sys/class/leds.
+
+	  See Documentation/ABI/testing/sysfs-class-led for details
+	  this function is the same with brightness_hw_changed
+
+config LEDS_REGULATOR_VIBRATOR
+	tristate "LED regulator vibrator support"
+	depends on LEDS_CLASS
+	help
+	  This option enables support for LED regulator vibrator.
+	  say 'y' to enable this
+
+	  To compile this driver as a module, choose 'M' here: the module
+	  will be called regulator-vibrator.
 
 comment "LED drivers"
 
