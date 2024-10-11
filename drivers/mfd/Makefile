@@ -175,10 +175,20 @@ obj-$(CONFIG_MFD_MAX8998)	+= max8998.o max8998-irq.o
 
 obj-$(CONFIG_MFD_MP2629)	+= mp2629.o
 
+obj-$(CONFIG_MFD_MT6338)	+= mt6338-core.o
 obj-$(CONFIG_MFD_MT6360)	+= mt6360-core.o
 obj-$(CONFIG_MFD_MT6370)	+= mt6370.o
+obj-$(CONFIG_MFD_MT6375)	+= mt6375.o
+obj-$(CONFIG_MFD_MT6681)	+= mt6681-core.o
+obj-$(CONFIG_MFD_MT6685)	+= mt6685-core.o
 mt6397-objs			:= mt6397-core.o mt6397-irq.o mt6358-irq.o
 obj-$(CONFIG_MFD_MT6397)	+= mt6397.o
+obj-$(CONFIG_MFD_MT6397)	+= mt63xx-debug.o
+obj-$(CONFIG_MFD_MTK_SPMI_PMIC)	+= mtk-spmi-pmic.o
+ifeq ($(CONFIG_DEBUG_FS), y)
+obj-$(CONFIG_MFD_MTK_SPMI_PMIC)	+= mtk-spmi-pmic-debug.o
+endif
+obj-$(CONFIG_MT6685_AUDCLK)	+= mt6685-audclk.o
 
 pcf50633-objs			:= pcf50633-core.o pcf50633-irq.o
 obj-$(CONFIG_MFD_PCF50633)	+= pcf50633.o
@@ -243,6 +253,7 @@ obj-$(CONFIG_MFD_DLN2)		+= dln2.o
 obj-$(CONFIG_MFD_RT4831)	+= rt4831.o
 obj-$(CONFIG_MFD_RT5033)	+= rt5033.o
 obj-$(CONFIG_MFD_RT5120)	+= rt5120.o
+obj-$(CONFIG_MFD_RT9490)	+= rt9490.o
 obj-$(CONFIG_MFD_SKY81452)	+= sky81452.o
 
 obj-$(CONFIG_INTEL_SOC_PMIC)		+= intel_soc_pmic_crc.o
