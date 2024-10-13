@@ -3,6 +3,10 @@
 # Makefile for MMC/SD host controller drivers
 #
 
+ccflags-y += -I$(srctree)/drivers/char/rpmb/
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/
+ccflags-y += -I$(srctree)/drivers/ufs/host/
+
 obj-$(CONFIG_MMC_ARMMMCI) += armmmci.o
 armmmci-y := mmci.o
 armmmci-$(CONFIG_MMC_QCOM_DML) += mmci_qcom_dml.o
@@ -26,6 +30,8 @@ obj-$(CONFIG_MMC_WBSD)		+= wbsd.o
 obj-$(CONFIG_MMC_AU1X)		+= au1xmmc.o
 obj-$(CONFIG_MMC_ALCOR)	+= alcor.o
 obj-$(CONFIG_MMC_MTK)		+= mtk-sd.o
+obj-$(CONFIG_MMC_MTK_PRO)	+= mtk-mmc.o
+obj-$(CONFIG_MMC_DEBUG) 	+= mtk-mmc-dbg.o
 obj-$(CONFIG_MMC_OMAP)		+= omap.o
 obj-$(CONFIG_MMC_OMAP_HS)	+= omap_hsmmc.o
 obj-$(CONFIG_MMC_ATMELMCI)	+= atmel-mci.o
