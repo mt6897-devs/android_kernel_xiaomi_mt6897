@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (C) 2022 MediaTek Inc.
- * Author: Hui Liu <hui.liu@mediatek.com>
+ * Copyright (C) 2020 MediaTek Inc.
+ * Auther: Zhiyong Tao <zhiyong.tao@mediatek.com>
  *
  */
 
@@ -10,7 +10,9 @@
 
 #include "pinctrl-paris.h"
 
+
 static const struct mtk_pin_desc mtk_pins_mt8188[] = {
+
 	MTK_PIN(
 		0, "GPIO0",
 		MTK_EINT_FUNCTION(0, 0),
@@ -2253,7 +2255,8 @@ static const struct mtk_pin_desc mtk_pins_mt8188[] = {
 		MTK_EINT_FUNCTION(0, 224),
 		DRV_FIXED,
 		MTK_FUNCTION(0, NULL)
-	)
+	),
+
 };
 
 #endif /* __PINCTRL__MTK_MT8188_H */

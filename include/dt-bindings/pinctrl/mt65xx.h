@@ -24,6 +24,7 @@
 #define MTK_PULL_SET_RSEL_101  205
 #define MTK_PULL_SET_RSEL_110  206
 #define MTK_PULL_SET_RSEL_111  207
+#define MTK_PULL_SET_RSEL_MAX  207
 
 #define MTK_DRIVE_2mA  2
 #define MTK_DRIVE_4mA  4

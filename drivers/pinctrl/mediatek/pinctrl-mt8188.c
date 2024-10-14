@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2022 MediaTek Inc.
- * Author: Hui Liu <hui.liu@mediatek.com>
+ * Copyright (C) 2020 MediaTek Inc.
+ * Auther: Zhiyong Tao <zhiyong.tao@mediatek.com>
  *
  */
 
@@ -26,19 +26,15 @@
 static const struct mtk_pin_field_calc mt8188_pin_mode_range[] = {
 	PIN_FIELD(0, 177, 0x0300, 0x10, 0, 4),
 };
-
 static const struct mtk_pin_field_calc mt8188_pin_dir_range[] = {
 	PIN_FIELD(0, 177, 0x0000, 0x10, 0, 1),
 };
-
 static const struct mtk_pin_field_calc mt8188_pin_di_range[] = {
 	PIN_FIELD(0, 177, 0x0200, 0x10, 0, 1),
 };
-
 static const struct mtk_pin_field_calc mt8188_pin_do_range[] = {
 	PIN_FIELD(0, 177, 0x0100, 0x10, 0, 1),
 };
-
 static const struct mtk_pin_field_calc mt8188_pin_smt_range[] = {
 	PIN_FIELD_BASE(0, 0, 1, 0x0170, 0x10, 8, 1),
 	PIN_FIELD_BASE(1, 1, 1, 0x0170, 0x10, 9, 1),
@@ -1598,55 +1594,46 @@ static const unsigned int mt8188_pull_type[] = {
 };
 
 static const struct mtk_pin_reg_calc mt8188_reg_cals[PINCTRL_PIN_REG_MAX] = {
-	[PINCTRL_PIN_REG_MODE] = MTK_RANGE(mt8188_pin_mode_range),
-	[PINCTRL_PIN_REG_DIR] = MTK_RANGE(mt8188_pin_dir_range),
-	[PINCTRL_PIN_REG_DI] = MTK_RANGE(mt8188_pin_di_range),
-	[PINCTRL_PIN_REG_DO] = MTK_RANGE(mt8188_pin_do_range),
-	[PINCTRL_PIN_REG_SMT] = MTK_RANGE(mt8188_pin_smt_range),
-	[PINCTRL_PIN_REG_IES] = MTK_RANGE(mt8188_pin_ies_range),
-	[PINCTRL_PIN_REG_TDSEL] = MTK_RANGE(mt8188_pin_tdsel_range),
-	[PINCTRL_PIN_REG_RDSEL] = MTK_RANGE(mt8188_pin_rdsel_range),
-	[PINCTRL_PIN_REG_PUPD] = MTK_RANGE(mt8188_pin_pupd_range),
-	[PINCTRL_PIN_REG_R0] = MTK_RANGE(mt8188_pin_r0_range),
-	[PINCTRL_PIN_REG_R1] = MTK_RANGE(mt8188_pin_r1_range),
-	[PINCTRL_PIN_REG_PU] = MTK_RANGE(mt8188_pin_pu_range),
-	[PINCTRL_PIN_REG_PD] = MTK_RANGE(mt8188_pin_pd_range),
-	[PINCTRL_PIN_REG_DRV] = MTK_RANGE(mt8188_pin_drv_range),
-	[PINCTRL_PIN_REG_DRV_ADV] = MTK_RANGE(mt8188_pin_drv_adv_range),
-	[PINCTRL_PIN_REG_RSEL] = MTK_RANGE(mt8188_pin_rsel_range),
+	[PINCTRL_PIN_REG_MODE]	= MTK_RANGE(mt8188_pin_mode_range),
+	[PINCTRL_PIN_REG_DIR]	= MTK_RANGE(mt8188_pin_dir_range),
+	[PINCTRL_PIN_REG_DI]	= MTK_RANGE(mt8188_pin_di_range),
+	[PINCTRL_PIN_REG_DO]	= MTK_RANGE(mt8188_pin_do_range),
+	[PINCTRL_PIN_REG_SMT]	= MTK_RANGE(mt8188_pin_smt_range),
+	[PINCTRL_PIN_REG_IES]	= MTK_RANGE(mt8188_pin_ies_range),
+	[PINCTRL_PIN_REG_TDSEL]	= MTK_RANGE(mt8188_pin_tdsel_range),
+	[PINCTRL_PIN_REG_RDSEL]	= MTK_RANGE(mt8188_pin_rdsel_range),
+	[PINCTRL_PIN_REG_PUPD]	= MTK_RANGE(mt8188_pin_pupd_range),
+	[PINCTRL_PIN_REG_R0]	= MTK_RANGE(mt8188_pin_r0_range),
+	[PINCTRL_PIN_REG_R1]	= MTK_RANGE(mt8188_pin_r1_range),
+	[PINCTRL_PIN_REG_PU]	= MTK_RANGE(mt8188_pin_pu_range),
+	[PINCTRL_PIN_REG_PD]	= MTK_RANGE(mt8188_pin_pd_range),
+	[PINCTRL_PIN_REG_DRV]	= MTK_RANGE(mt8188_pin_drv_range),
+	[PINCTRL_PIN_REG_DRV_ADV]	= MTK_RANGE(mt8188_pin_drv_adv_range),
+	[PINCTRL_PIN_REG_RSEL]	= MTK_RANGE(mt8188_pin_rsel_range),
 };
 
 static const char * const mt8188_pinctrl_register_base_name[] = {
-	"iocfg0", "iocfg_rm", "iocfg_lt", "iocfg_lm", "iocfg_rt",
-};
-
-static const struct mtk_eint_hw mt8188_eint_hw = {
-	.port_mask = 0xf,
-	.ports     = 7,
-	.ap_num    = 225,
-	.db_cnt    = 32,
-	.db_time   = debounce_time_mt6765,
+		"iocfg0", "iocfg_rm", "iocfg_lt", "iocfg_lm", "iocfg_rt",
 };
 
 static const struct mtk_pin_soc mt8188_data = {
-	.reg_cal = mt8188_reg_cals,
-	.pins = mtk_pins_mt8188,
-	.npins = ARRAY_SIZE(mtk_pins_mt8188),
-	.ngrps = ARRAY_SIZE(mtk_pins_mt8188),
-	.eint_hw = &mt8188_eint_hw,
-	.nfuncs = 8,
-	.gpio_m = 0,
-	.base_names = mt8188_pinctrl_register_base_name,
-	.nbase_names = ARRAY_SIZE(mt8188_pinctrl_register_base_name),
+	.reg_cal	= mt8188_reg_cals,
+	.pins	= mtk_pins_mt8188,
+	.npins	= ARRAY_SIZE(mtk_pins_mt8188),
+	.ngrps	= ARRAY_SIZE(mtk_pins_mt8188),
+	.nfuncs	= 8,
+	.gpio_m	= 0,
+	.base_names	= mt8188_pinctrl_register_base_name,
+	.nbase_names	= ARRAY_SIZE(mt8188_pinctrl_register_base_name),
+	.bias_set_combo	= mtk_pinconf_bias_set_combo,
 	.pull_type = mt8188_pull_type,
 	.pin_rsel = mt8188_pin_rsel_val_range,
 	.npin_rsel = ARRAY_SIZE(mt8188_pin_rsel_val_range),
-	.bias_set_combo = mtk_pinconf_bias_set_combo,
-	.bias_get_combo = mtk_pinconf_bias_get_combo,
-	.drive_set = mtk_pinconf_drive_set_rev1,
-	.drive_get = mtk_pinconf_drive_get_rev1,
-	.adv_drive_set = mtk_pinconf_adv_drive_set_raw,
-	.adv_drive_get = mtk_pinconf_adv_drive_get_raw,
+	.bias_get_combo	= mtk_pinconf_bias_get_combo,
+	.drive_set	= mtk_pinconf_drive_set_rev1,
+	.drive_get	= mtk_pinconf_drive_get_rev1,
+	.adv_drive_set	= mtk_pinconf_adv_drive_set_raw,
+	.adv_drive_get	= mtk_pinconf_adv_drive_get_raw,
 };
 
 static const struct of_device_id mt8188_pinctrl_of_match[] = {
@@ -1663,12 +1650,6 @@ static struct platform_driver mt8188_pinctrl_driver = {
 	.probe = mtk_paris_pinctrl_probe,
 };
 
-static int __init mt8188_pinctrl_init(void)
-{
-	return platform_driver_register(&mt8188_pinctrl_driver);
-}
+module_platform_driver(mt8188_pinctrl_driver);
+MODULE_LICENSE("GPL v2");
 
-arch_initcall(mt8188_pinctrl_init);
-
-MODULE_LICENSE("GPL");
-MODULE_DESCRIPTION("MediaTek MT8188 Pinctrl Driver");
