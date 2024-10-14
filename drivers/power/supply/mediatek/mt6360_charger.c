@@ -460,6 +460,9 @@ static int mt6360_charger_get_property(struct power_supply *psy,
 	struct mt6360_chg_info *mci = power_supply_get_drvdata(psy);
 	int ret = 0;
 
+	if (!mci)
+		return -EINVAL;
+
 	switch (psp) {
 	case POWER_SUPPLY_PROP_ONLINE:
 		ret = mt6360_charger_get_online(mci, val);
@@ -509,6 +512,9 @@ static int mt6360_charger_set_property(struct power_supply *psy,
 {
 	struct mt6360_chg_info *mci = power_supply_get_drvdata(psy);
 	int ret;
+
+	if (!mci)
+		return -EINVAL;
 
 	switch (psp) {
 	case POWER_SUPPLY_PROP_ONLINE:
@@ -591,7 +597,7 @@ static const struct regulator_ops mt6360_chg_otg_ops = {
 };
 
 static const struct regulator_desc mt6360_otg_rdesc = {
-	.of_match = "usb-otg-vbus-regulator",
+	.of_match = "usb-otg-vbus",
 	.name = "usb-otg-vbus",
 	.ops = &mt6360_chg_otg_ops,
 	.owner = THIS_MODULE,
@@ -799,9 +805,7 @@ static int mt6360_charger_probe(struct platform_device *pdev)
 	mci->vinovp = 6500000;
 	mutex_init(&mci->chgdet_lock);
 	platform_set_drvdata(pdev, mci);
-	ret = devm_work_autocancel(&pdev->dev, &mci->chrdet_work, mt6360_chrdet_work);
-	if (ret)
-		return dev_err_probe(&pdev->dev, ret, "Failed to set delayed work\n");
+	devm_work_autocancel(&pdev->dev, &mci->chrdet_work, mt6360_chrdet_work);
 
 	ret = device_property_read_u32(&pdev->dev, "richtek,vinovp-microvolt", &mci->vinovp);
 	if (ret)
