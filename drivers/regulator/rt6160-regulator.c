@@ -5,6 +5,7 @@
 #include <linux/i2c.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/of_platform.h>
 #include <linux/property.h>
 #include <linux/regmap.h>
 #include <linux/regulator/driver.h>
@@ -296,7 +297,33 @@ static int rt6160_probe(struct i2c_client *i2c)
 		return PTR_ERR(rdev);
 	}
 
+	ret = devm_of_platform_populate(&i2c->dev);
+	if (ret) {
+		dev_notice(&i2c->dev, "Failed to add platform device\n");
+		return ret;
+	}
+
 	return 0;
+}
+
+static void rt6160_shutdown(struct i2c_client *i2c)
+{
+	int val = 0, ret = 0;
+
+	/* enable D_SLP */
+	ret = i2c_smbus_write_byte_data(i2c, 0x3F, 0x62);
+	ret = i2c_smbus_write_byte_data(i2c, 0x3D, 0x86);
+	val = i2c_smbus_read_byte_data(i2c, 0x3F);
+	if (val == 0x1) {
+		val = i2c_smbus_read_byte_data(i2c, 0x08);
+		dev_info(&i2c->dev, "%s 0x08 = 0x%02x before shutdown\n", __func__, val);
+		ret = i2c_smbus_write_byte_data(i2c, 0x08, 0x00);
+		val = i2c_smbus_read_byte_data(i2c,  0x08);
+	}
+	ret = i2c_smbus_write_byte_data(i2c, 0x3F, 0x00);
+	ret = i2c_smbus_write_byte_data(i2c, 0x3D, 0x00);
+	dev_info(&i2c->dev, "%s, 0x08 = 0x%02x after shutdown, ret = %d\n",
+		 __func__, val, ret);
 }
 
 static const struct of_device_id __maybe_unused rt6160_of_match_table[] = {
@@ -311,6 +338,7 @@ static struct i2c_driver rt6160_driver = {
 		.of_match_table = rt6160_of_match_table,
 	},
 	.probe_new = rt6160_probe,
+	.shutdown = rt6160_shutdown,
 };
 module_i2c_driver(rt6160_driver);
 
