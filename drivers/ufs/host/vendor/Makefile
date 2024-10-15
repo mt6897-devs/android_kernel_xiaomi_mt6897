@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-2.0
+# Mediatek UFS extended features makefile
+ccflags-y += -I$(srctree)/drivers/clk/mediatek/
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/power_throttling/
+ccflags-y += -I$(srctree)/drivers/ufs/core/
+ccflags-y += -I$(srctree)/drivers/ufs/host/
+
+obj-$(CONFIG_DEVICE_MODULES_SCSI_UFS_MEDIATEK)  += ufs-mediatek-mod.o
+ufs-mediatek-mod-y                              += ../ufs-mediatek.o ../ufs-mediatek-sysfs.o ../ufs-mediatek-mimic.o
+ufs-mediatek-mod-$(CONFIG_MTK_BLOCK_IO_TRACER)  += ../ufs-mediatek-btag.o
+ufs-mediatek-mod-$(CONFIG_RPMB)                 += ../ufs-mediatek-rpmb.o
+ufs-mediatek-mod-$(CONFIG_RPMB)                 += ../ufs-mediatek-ise-dummy.o
+ufs-mediatek-mod-$(CONFIG_UFSFEATURE)           += ufsfeature.o ufsfeature-mimic.o
+ufs-mediatek-mod-$(CONFIG_UFSSHPB)              += ufsshpb.o
+ufs-mediatek-mod-$(CONFIG_UFSTW)                += ufstw.o
+ufs-mediatek-mod-$(CONFIG_UFSHID)               += ufshid.o
+ufs-mediatek-mod-$(CONFIG_UFSRINGBUF)           += ufsringbuf.o
