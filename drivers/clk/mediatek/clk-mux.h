@@ -7,35 +7,57 @@
 #ifndef __DRV_CLK_MTK_MUX_H
 #define __DRV_CLK_MTK_MUX_H
 
-#include <linux/notifier.h>
-#include <linux/spinlock.h>
-#include <linux/types.h>
+#include <linux/clk-provider.h>
 
-struct clk;
-struct clk_hw_onecell_data;
-struct clk_ops;
-struct device;
-struct device_node;
+struct mtk_clk_mux {
+	struct clk_hw hw;
+	struct regmap *regmap;
+	struct regmap *hwv_regmap;
+	const struct mtk_mux *data;
+	spinlock_t *lock;
+	unsigned int flags;
+};
 
 struct mtk_mux {
 	int id;
 	const char *name;
 	const char * const *parent_names;
+	const char *hwv_comp;
 	unsigned int flags;
 
 	u32 mux_ofs;
 	u32 set_ofs;
 	u32 clr_ofs;
 	u32 upd_ofs;
+	u32 hwv_set_ofs;
+	u32 hwv_clr_ofs;
+	u32 hwv_sta_ofs;
+	u32 chk_ofs;
 
 	u8 mux_shift;
 	u8 mux_width;
 	u8 gate_shift;
-	s8 upd_shift;
+	u8 upd_shift;
+	u8 ipi_shift;
+	u8 qs_shift;
+	u8 chk_shift;
 
 	const struct clk_ops *ops;
+	const struct clk_ops *dma_ops;
+
 	signed char num_parents;
 };
+
+extern const struct clk_ops mtk_mux_ops;
+extern const struct clk_ops mtk_mux_clr_set_ops;
+extern const struct clk_ops mtk_mux_clr_set_upd_ops;
+extern const struct clk_ops mtk_mux_gate_ops;
+extern const struct clk_ops mtk_mux_gate_clr_set_upd_ops;
+extern const struct clk_ops mtk_mux_gate_clr_set_upd_2_ops;
+extern const struct clk_ops mtk_hwv_mux_ops;
+extern const struct clk_ops mtk_ipi_mux_ops;
+extern const struct clk_ops mtk_hwv_dfs_mux_ops;
+extern const struct clk_ops mtk_hwv_dfs_mux_dummy_ops;
 
 #define GATE_CLR_SET_UPD_FLAGS(_id, _name, _parents, _mux_ofs,		\
 			_mux_set_ofs, _mux_clr_ofs, _shift, _width,	\
@@ -56,8 +78,13 @@ struct mtk_mux {
 		.ops = &_ops,						\
 	}
 
-extern const struct clk_ops mtk_mux_clr_set_upd_ops;
-extern const struct clk_ops mtk_mux_gate_clr_set_upd_ops;
+#define MUX_GATE_CLR_SET_UPD_FLAGS_2(_id, _name, _parents, _mux_ofs,	\
+			_mux_set_ofs, _mux_clr_ofs, _shift, _width,	\
+			_gate, _upd_ofs, _upd, _flags)			\
+		GATE_CLR_SET_UPD_FLAGS(_id, _name, _parents, _mux_ofs,	\
+			_mux_set_ofs, _mux_clr_ofs, _shift, _width,	\
+			_gate, _upd_ofs, _upd, _flags,			\
+			mtk_mux_gate_clr_set_upd_2_ops)
 
 #define MUX_GATE_CLR_SET_UPD_FLAGS(_id, _name, _parents, _mux_ofs,	\
 			_mux_set_ofs, _mux_clr_ofs, _shift, _width,	\
@@ -73,36 +100,267 @@ extern const struct clk_ops mtk_mux_gate_clr_set_upd_ops;
 		MUX_GATE_CLR_SET_UPD_FLAGS(_id, _name, _parents,	\
 			_mux_ofs, _mux_set_ofs, _mux_clr_ofs, _shift,	\
 			_width, _gate, _upd_ofs, _upd,			\
-			CLK_SET_RATE_PARENT)
+			0)
+
+#define MUX_CLR_SET_UPD_FLAGS(_id, _name, _parents, _mux_ofs,		\
+			_mux_set_ofs, _mux_clr_ofs, _shift, _width,	\
+			_upd_ofs, _upd, _flags)				\
+		GATE_CLR_SET_UPD_FLAGS(_id, _name, _parents, _mux_ofs,	\
+			_mux_set_ofs, _mux_clr_ofs, _shift, _width,	\
+			0, _upd_ofs, _upd, _flags,			\
+			mtk_mux_clr_set_upd_ops)
 
 #define MUX_CLR_SET_UPD(_id, _name, _parents, _mux_ofs,			\
 			_mux_set_ofs, _mux_clr_ofs, _shift, _width,	\
 			_upd_ofs, _upd)					\
-		GATE_CLR_SET_UPD_FLAGS(_id, _name, _parents, _mux_ofs,	\
+		MUX_CLR_SET_UPD_FLAGS(_id, _name, _parents,		\
+			_mux_ofs, _mux_set_ofs, _mux_clr_ofs, _shift,	\
+			_width, _upd_ofs, _upd, 0)
+
+#define MUX_CLR_SET(_id, _name, _parents, _mux_ofs,			\
+			_mux_set_ofs, _mux_clr_ofs, _shift, _width) {	\
+		.id = _id,						\
+		.name = _name,						\
+		.mux_ofs = _mux_ofs,					\
+		.set_ofs = _mux_set_ofs,				\
+		.clr_ofs = _mux_clr_ofs,				\
+		.mux_shift = _shift,					\
+		.mux_width = _width,					\
+		.parent_names = _parents,				\
+		.num_parents = ARRAY_SIZE(_parents),			\
+		.flags = CLK_SET_RATE_PARENT,				\
+		.ops = &mtk_mux_clr_set_ops,				\
+	}
+
+#define GATE_CLR_SET_UPD_CHK_FLAGS(_id, _name, _parents, _mux_ofs,		\
 			_mux_set_ofs, _mux_clr_ofs, _shift, _width,	\
-			0, _upd_ofs, _upd, CLK_SET_RATE_PARENT,		\
+			_gate, _upd_ofs, _upd, _chk_ofs, _chk,		\
+			_flags, _ops) {					\
+		.id = _id,						\
+		.name = _name,						\
+		.mux_ofs = _mux_ofs,					\
+		.set_ofs = _mux_set_ofs,				\
+		.clr_ofs = _mux_clr_ofs,				\
+		.upd_ofs = _upd_ofs,					\
+		.chk_ofs = _chk_ofs,					\
+		.mux_shift = _shift,					\
+		.mux_width = _width,					\
+		.gate_shift = _gate,					\
+		.upd_shift = _upd,					\
+		.chk_shift = _chk,					\
+		.parent_names = _parents,				\
+		.num_parents = ARRAY_SIZE(_parents),			\
+		.flags = _flags,					\
+		.ops = &_ops,						\
+	}
+
+#define MUX_GATE_CLR_SET_UPD_CHK_FLAGS(_id, _name, _parents, _mux_ofs,	\
+			_mux_set_ofs, _mux_clr_ofs, _shift, _width,	\
+			_gate, _upd_ofs, _upd, _chk_ofs, _chk,		\
+			_flags)						\
+		GATE_CLR_SET_UPD_CHK_FLAGS(_id, _name, _parents, _mux_ofs,	\
+			_mux_set_ofs, _mux_clr_ofs, _shift, _width,	\
+			_gate, _upd_ofs, _upd, _chk_ofs, _chk, _flags,	\
+			mtk_mux_gate_clr_set_upd_ops)
+
+#define MUX_GATE_CLR_SET_UPD_CHK(_id, _name, _parents, _mux_ofs,	\
+			_mux_set_ofs, _mux_clr_ofs, _shift, _width,	\
+			_gate, _upd_ofs, _upd, _chk_ofs, _chk)		\
+		MUX_GATE_CLR_SET_UPD_CHK_FLAGS(_id, _name, _parents,	\
+			_mux_ofs, _mux_set_ofs, _mux_clr_ofs, _shift,	\
+			_width, _gate, _upd_ofs, _upd, _chk_ofs, _chk,	\
+			0)
+
+#define MUX_CLR_SET_UPD_CHK_FLAGS(_id, _name, _parents, _mux_ofs,		\
+			_mux_set_ofs, _mux_clr_ofs, _shift, _width,	\
+			_upd_ofs, _upd, _chk_ofs, _chk, _flags)		\
+		GATE_CLR_SET_UPD_CHK_FLAGS(_id, _name, _parents, _mux_ofs,	\
+			_mux_set_ofs, _mux_clr_ofs, _shift, _width,	\
+			0, _upd_ofs, _upd, _chk_ofs, _chk, _flags,	\
 			mtk_mux_clr_set_upd_ops)
 
-int mtk_clk_register_muxes(struct device *dev,
-			   const struct mtk_mux *muxes,
+#define MUX_CLR_SET_UPD_CHK(_id, _name, _parents, _mux_ofs,			\
+			_mux_set_ofs, _mux_clr_ofs, _shift, _width,	\
+			_upd_ofs, _upd, _chk_ofs, _chk)			\
+		MUX_CLR_SET_UPD_CHK_FLAGS(_id, _name, _parents,		\
+			_mux_ofs, _mux_set_ofs, _mux_clr_ofs, _shift,	\
+			_width, _upd_ofs, _upd, _chk_ofs, _chk, 0)
+
+#define MUX_GATE_CLR_SET_UPD_FLAGS_2_CHK(_id, _name, _parents,		\
+			_mux_ofs, _mux_set_ofs, _mux_clr_ofs,		\
+			_shift, _width, _gate, _upd_ofs, _upd,		\
+			_chk_ofs, _chk, _flags)			\
+		GATE_CLR_SET_UPD_CHK_FLAGS(_id, _name, _parents,		\
+			_mux_ofs, _mux_set_ofs, _mux_clr_ofs,		\
+			_shift, _width, _gate, _upd_ofs, _upd,		\
+			_chk_ofs, _chk, _flags,				\
+			mtk_mux_gate_clr_set_upd_2_ops)
+
+#define MUX_MULT_HWV_FLAGS(_id, _name, _parents, _mux_ofs,		\
+			_mux_set_ofs, _mux_clr_ofs, _hwv_comp,	\
+			_hwv_sta_ofs, _hwv_set_ofs, _hwv_clr_ofs,	\
+			_shift, _width, _gate, _upd_ofs, _upd,		\
+			_chk_ofs, _chk, _flags) {			\
+		.id = _id,						\
+		.name = _name,						\
+		.mux_ofs = _mux_ofs,					\
+		.set_ofs = _mux_set_ofs,				\
+		.clr_ofs = _mux_clr_ofs,				\
+		.hwv_comp = _hwv_comp,					\
+		.hwv_sta_ofs = _hwv_sta_ofs,				\
+		.hwv_set_ofs = _hwv_set_ofs,				\
+		.hwv_clr_ofs = _hwv_clr_ofs,				\
+		.upd_ofs = _upd_ofs,					\
+		.chk_ofs = _chk_ofs,					\
+		.mux_shift = _shift,					\
+		.mux_width = _width,					\
+		.gate_shift = _gate,					\
+		.upd_shift = _upd,					\
+		.chk_shift = _chk,					\
+		.parent_names = _parents,				\
+		.num_parents = ARRAY_SIZE(_parents),			\
+		.flags =  CLK_USE_HW_VOTER | _flags,	\
+		.ops = &mtk_hwv_mux_ops,				\
+		.dma_ops = &mtk_mux_gate_clr_set_upd_ops,		\
+	}
+
+#define MUX_MULT_HWV(_id, _name, _parents, _mux_ofs,			\
+			_mux_set_ofs, _mux_clr_ofs, _hwv_comp,		\
+			_hwv_sta_ofs, _hwv_set_ofs, _hwv_clr_ofs,	\
+			_shift, _width, _gate, _upd_ofs, _upd,		\
+			_chk_ofs, _chk)					\
+		MUX_MULT_HWV_FLAGS(_id, _name, _parents, _mux_ofs,	\
+			_mux_set_ofs, _mux_clr_ofs, _hwv_comp,		\
+			_hwv_sta_ofs, _hwv_set_ofs, _hwv_clr_ofs,	\
+			_shift, _width, _gate, _upd_ofs, _upd,		\
+			_chk_ofs, _chk, 0)
+
+#define MUX_HWV_FLAGS(_id, _name, _parents, _mux_ofs,			\
+			_mux_set_ofs, _mux_clr_ofs, _hwv_sta_ofs,	\
+			_hwv_set_ofs, _hwv_clr_ofs, _shift, _width,	\
+			_gate, _upd_ofs, _upd, _flags)			\
+		MUX_MULT_HWV_FLAGS(_id, _name, _parents, _mux_ofs,	\
+			_mux_set_ofs, _mux_clr_ofs, NULL,		\
+			_hwv_sta_ofs, _hwv_set_ofs, _hwv_clr_ofs,	\
+			_shift, _width, _gate, _upd_ofs, _upd,		\
+			0, 0, _flags)
+
+#define MUX_HWV(_id, _name, _parents, _mux_ofs,		\
+			_mux_set_ofs, _mux_clr_ofs, _hwv_sta_ofs,	\
+			_hwv_set_ofs, _hwv_clr_ofs, _shift, _width,	\
+			_gate, _upd_ofs, _upd)				\
+		MUX_HWV_FLAGS(_id, _name, _parents, _mux_ofs,		\
+			_mux_set_ofs, _mux_clr_ofs, _hwv_sta_ofs,	\
+			_hwv_set_ofs, _hwv_clr_ofs, _shift, _width,	\
+			_gate, _upd_ofs, _upd, 0)
+
+#define MUX_MULT_DFS_HWV_FLAGS(_id, _name, _parents, _mux_ofs,		\
+			_mux_set_ofs, _mux_clr_ofs, _hwv_comp,		\
+			_hwv_sta_ofs, _hwv_set_ofs, _hwv_clr_ofs,	\
+			_shift, _width, _gate, _upd_ofs, _upd,		\
+			_chk_ofs, _chk, _flags) {			\
+		.id = _id,						\
+		.name = _name,						\
+		.mux_ofs = _mux_ofs,					\
+		.set_ofs = _mux_set_ofs,				\
+		.clr_ofs = _mux_clr_ofs,				\
+		.hwv_comp = _hwv_comp,					\
+		.hwv_sta_ofs = _hwv_sta_ofs,				\
+		.hwv_set_ofs = _hwv_set_ofs,				\
+		.hwv_clr_ofs = _hwv_clr_ofs,				\
+		.upd_ofs = _upd_ofs,					\
+		.chk_ofs = _chk_ofs,					\
+		.mux_shift = _shift,					\
+		.mux_width = _width,					\
+		.gate_shift = _gate,					\
+		.upd_shift = _upd,					\
+		.chk_shift = _chk,					\
+		.parent_names = _parents,				\
+		.num_parents = ARRAY_SIZE(_parents),			\
+		.flags =  CLK_USE_HW_VOTER | _flags,			\
+		.ops = &mtk_hwv_dfs_mux_ops,				\
+		.dma_ops = &mtk_mux_gate_clr_set_upd_ops,		\
+	}
+
+#define MUX_MULT_DFS_HWV_DUMMY(_id, _name, _parents, _mux_ofs,		\
+			_mux_set_ofs, _mux_clr_ofs, _hwv_comp,		\
+			_hwv_sta_ofs, _hwv_set_ofs, _hwv_clr_ofs,	\
+			_shift, _width, _gate, _upd_ofs, _upd,		\
+			_chk_ofs, _chk, _flags) {			\
+		.id = _id,						\
+		.name = _name,						\
+		.mux_ofs = _mux_ofs,					\
+		.set_ofs = _mux_set_ofs,				\
+		.clr_ofs = _mux_clr_ofs,				\
+		.hwv_comp = _hwv_comp,					\
+		.hwv_sta_ofs = _hwv_sta_ofs,				\
+		.hwv_set_ofs = _hwv_set_ofs,				\
+		.hwv_clr_ofs = _hwv_clr_ofs,				\
+		.upd_ofs = _upd_ofs,					\
+		.chk_ofs = _chk_ofs,					\
+		.mux_shift = _shift,					\
+		.mux_width = _width,					\
+		.gate_shift = _gate,					\
+		.upd_shift = _upd,					\
+		.chk_shift = _chk,					\
+		.parent_names = _parents,				\
+		.num_parents = ARRAY_SIZE(_parents),			\
+		.flags =  CLK_USE_HW_VOTER | _flags,			\
+		.ops = &mtk_hwv_dfs_mux_dummy_ops,			\
+		.dma_ops = &mtk_mux_gate_clr_set_upd_ops,		\
+	}
+
+#define MUX_MULT_DFS_HWV(_id, _name, _parents, _mux_ofs,		\
+			_mux_set_ofs, _mux_clr_ofs, _hwv_comp,		\
+			_hwv_sta_ofs, _hwv_set_ofs, _hwv_clr_ofs,	\
+			_shift, _width, _gate, _upd_ofs, _upd,		\
+			_chk_ofs, _chk)					\
+		MUX_MULT_DFS_HWV_FLAGS(_id, _name, _parents, _mux_ofs,	\
+			_mux_set_ofs, _mux_clr_ofs, _hwv_comp,		\
+			_hwv_sta_ofs, _hwv_set_ofs, _hwv_clr_ofs,	\
+			_shift, _width, _gate, _upd_ofs, _upd,		\
+			_chk_ofs, _chk, 0)
+
+#define MUX_IPI_FLAGS(_id, _name, _parents, _mux_ofs,			\
+			_mux_set_ofs, _mux_clr_ofs, _hwv_sta_ofs,	\
+			_hwv_set_ofs, _hwv_clr_ofs, _ipi_shift,		\
+			_shift, _width, _gate, _upd_ofs, _upd,		\
+			_qs_shift, _flags) {				\
+		.id = _id,						\
+		.name = _name,						\
+		.mux_ofs = _mux_ofs,					\
+		.set_ofs = _mux_set_ofs,				\
+		.clr_ofs = _mux_clr_ofs,				\
+		.hwv_sta_ofs = _hwv_sta_ofs,				\
+		.hwv_set_ofs = _hwv_set_ofs,				\
+		.hwv_clr_ofs = _hwv_clr_ofs,				\
+		.upd_ofs = _upd_ofs,					\
+		.mux_shift = _shift,					\
+		.mux_width = _width,					\
+		.gate_shift = _gate,					\
+		.upd_shift = _upd,					\
+		.ipi_shift = _ipi_shift,				\
+		.qs_shift = _qs_shift,					\
+		.parent_names = _parents,				\
+		.num_parents = ARRAY_SIZE(_parents),			\
+		.flags = CLK_USE_HW_VOTER | _flags,			\
+		.ops = &mtk_ipi_mux_ops,				\
+		.dma_ops = &mtk_mux_gate_clr_set_upd_ops,		\
+	}
+
+#define MUX_IPI(_id, _name, _parents, _mux_ofs,		\
+			_mux_set_ofs, _mux_clr_ofs, _hwv_sta_ofs,	\
+			_hwv_set_ofs, _hwv_clr_ofs, _ipi_shift,		\
+			_shift, _width, _gate, _upd_ofs, _upd)		\
+		MUX_IPI_FLAGS(_id, _name, _parents, _mux_ofs,		\
+			_mux_set_ofs, _mux_clr_ofs, _hwv_sta_ofs,	\
+			_hwv_set_ofs, _hwv_clr_ofs, _ipi_shift,		\
+			_shift, _width, _gate, _upd_ofs, _upd,		\
+			0, 0)
+
+int mtk_clk_register_muxes(const struct mtk_mux *muxes,
 			   int num, struct device_node *node,
 			   spinlock_t *lock,
-			   struct clk_hw_onecell_data *clk_data);
-
-void mtk_clk_unregister_muxes(const struct mtk_mux *muxes, int num,
-			      struct clk_hw_onecell_data *clk_data);
-
-struct mtk_mux_nb {
-	struct notifier_block	nb;
-	const struct clk_ops	*ops;
-
-	u8	bypass_index;	/* Which parent to temporarily use */
-	u8	original_index;	/* Set by notifier callback */
-};
-
-#define to_mtk_mux_nb(_nb)	container_of(_nb, struct mtk_mux_nb, nb)
-
-int devm_mtk_clk_mux_notifier_register(struct device *dev, struct clk *clk,
-				       struct mtk_mux_nb *mux_nb);
+			   struct clk_onecell_data *clk_data);
 
 #endif /* __DRV_CLK_MTK_MUX_H */
