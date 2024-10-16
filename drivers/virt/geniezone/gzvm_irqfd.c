@@ -15,10 +15,40 @@ struct gzvm_irq_ack_notifier {
 };
 
 /**
+ * struct gzvm_kernel_irqfd_resampler - irqfd resampler descriptor.
+ * @gzvm: Poiner to gzvm.
+ * @list: List of resampling struct _irqfd objects sharing this gsi.
+ *		    RCU list modified under gzvm->irqfds.resampler_lock.
+ * @notifier: gzvm irq ack notifier.
+ * @link: Entry in list of gzvm->irqfd.resampler_list.
+ *		    Use for sharing esamplers among irqfds on the same gsi.
+ *		    Accessed and modified under gzvm->irqfds.resampler_lock.
+ *
+ * Resampling irqfds are a special variety of irqfds used to emulate
+ * level triggered interrupts.  The interrupt is asserted on eventfd
+ * trigger.  On acknowledgment through the irq ack notifier, the
+ * interrupt is de-asserted and userspace is notified through the
+ * resamplefd.  All resamplers on the same gsi are de-asserted
+ * together, so we don't need to track the state of each individual
+ * user.  We can also therefore share the same irq source ID.
+ */
+struct gzvm_kernel_irqfd_resampler {
+	struct gzvm *gzvm;
+
+	struct list_head list;
+	struct gzvm_irq_ack_notifier notifier;
+
+	struct list_head link;
+};
+
+/**
  * struct gzvm_kernel_irqfd: gzvm kernel irqfd descriptor.
  * @gzvm: Pointer to struct gzvm.
  * @wait: Wait queue entry.
  * @gsi: Used for level IRQ fast-path.
+ * @resampler: The resampler used by this irqfd (resampler-only).
+ * @resamplefd: Eventfd notified on resample (resampler-only).
+ * @resampler_link: Entry in list of irqfds for a resampler (resampler-only).
  * @eventfd: Used for setup/shutdown.
  * @list: struct list_head.
  * @pt: struct poll_table_struct.
@@ -30,6 +60,12 @@ struct gzvm_kernel_irqfd {
 
 	int gsi;
 
+	struct gzvm_kernel_irqfd_resampler *resampler;
+
+	struct eventfd_ctx *resamplefd;
+
+	struct list_head resampler_link;
+
 	struct eventfd_ctx *eventfd;
 	struct list_head list;
 	poll_table pt;
@@ -39,15 +75,89 @@ struct gzvm_kernel_irqfd {
 static struct workqueue_struct *irqfd_cleanup_wq;
 
 /**
- * irqfd_set_irq(): irqfd to inject virtual interrupt.
+ * irqfd_set_spi(): irqfd to inject virtual interrupt.
  * @gzvm: Pointer to gzvm.
+ * @irq_source_id: irq source id.
  * @irq: This is spi interrupt number (starts from 0 instead of 32).
  * @level: irq triggered level.
+ * @line_status: irq status.
  */
-static void irqfd_set_irq(struct gzvm *gzvm, u32 irq, int level)
+static void irqfd_set_spi(struct gzvm *gzvm, int irq_source_id, u32 irq,
+			  int level, bool line_status)
 {
 	if (level)
-		gzvm_irqchip_inject_irq(gzvm, 0, irq, level);
+		gzvm_irqchip_inject_irq(gzvm, irq_source_id, 0, irq, level);
+}
+
+/**
+ * irqfd_resampler_ack() - Notify all of the resampler irqfds using this GSI
+ *			   when IRQ de-assert once.
+ * @ian: Pointer to gzvm_irq_ack_notifier.
+ *
+ * Since resampler irqfds share an IRQ source ID, we de-assert once
+ * then notify all of the resampler irqfds using this GSI.  We can't
+ * do multiple de-asserts or we risk racing with incoming re-asserts.
+ */
+static void irqfd_resampler_ack(struct gzvm_irq_ack_notifier *ian)
+{
+	struct gzvm_kernel_irqfd_resampler *resampler;
+	struct gzvm *gzvm;
+	struct gzvm_kernel_irqfd *irqfd;
+	int idx;
+
+	resampler = container_of(ian,
+				 struct gzvm_kernel_irqfd_resampler, notifier);
+	gzvm = resampler->gzvm;
+
+	irqfd_set_spi(gzvm, GZVM_IRQFD_RESAMPLE_IRQ_SOURCE_ID,
+		      resampler->notifier.gsi, 0, false);
+
+	idx = srcu_read_lock(&gzvm->irq_srcu);
+
+	list_for_each_entry_srcu(irqfd, &resampler->list, resampler_link,
+				 srcu_read_lock_held(&gzvm->irq_srcu)) {
+		eventfd_signal(irqfd->resamplefd, 1);
+	}
+
+	srcu_read_unlock(&gzvm->irq_srcu, idx);
+}
+
+static void gzvm_register_irq_ack_notifier(struct gzvm *gzvm,
+					   struct gzvm_irq_ack_notifier *ian)
+{
+	mutex_lock(&gzvm->irq_lock);
+	hlist_add_head_rcu(&ian->link, &gzvm->irq_ack_notifier_list);
+	mutex_unlock(&gzvm->irq_lock);
+}
+
+static void gzvm_unregister_irq_ack_notifier(struct gzvm *gzvm,
+					     struct gzvm_irq_ack_notifier *ian)
+{
+	mutex_lock(&gzvm->irq_lock);
+	hlist_del_init_rcu(&ian->link);
+	mutex_unlock(&gzvm->irq_lock);
+	synchronize_srcu(&gzvm->irq_srcu);
+}
+
+static void irqfd_resampler_shutdown(struct gzvm_kernel_irqfd *irqfd)
+{
+	struct gzvm_kernel_irqfd_resampler *resampler = irqfd->resampler;
+	struct gzvm *gzvm = resampler->gzvm;
+
+	mutex_lock(&gzvm->irqfds.resampler_lock);
+
+	list_del_rcu(&irqfd->resampler_link);
+	synchronize_srcu(&gzvm->irq_srcu);
+
+	if (list_empty(&resampler->list)) {
+		list_del(&resampler->link);
+		gzvm_unregister_irq_ack_notifier(gzvm, &resampler->notifier);
+		irqfd_set_spi(gzvm, GZVM_IRQFD_RESAMPLE_IRQ_SOURCE_ID,
+			      resampler->notifier.gsi, 0, false);
+		kfree(resampler);
+	}
+
+	mutex_unlock(&gzvm->irqfds.resampler_lock);
 }
 
 /**
@@ -69,6 +179,11 @@ static void irqfd_shutdown(struct work_struct *work)
 	 * further events.
 	 */
 	eventfd_ctx_remove_wait_queue(irqfd->eventfd, &irqfd->wait, &cnt);
+
+	if (irqfd->resampler) {
+		irqfd_resampler_shutdown(irqfd);
+		eventfd_ctx_put(irqfd->resamplefd);
+	}
 
 	/*
 	 * It is now safe to release the object's resources
@@ -128,7 +243,8 @@ static int irqfd_wakeup(wait_queue_entry_t *wait, unsigned int mode, int sync,
 
 		eventfd_ctx_do_read(irqfd->eventfd, &cnt);
 		/* gzvm's irq injection is not blocked, don't need workq */
-		irqfd_set_irq(gzvm, irqfd->gsi, 1);
+		irqfd_set_spi(gzvm, GZVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi,
+			      1, false);
 	}
 
 	if (flags & EPOLLHUP) {
@@ -162,8 +278,9 @@ static int gzvm_irqfd_assign(struct gzvm *gzvm, struct gzvm_irqfd *args)
 {
 	struct gzvm_kernel_irqfd *irqfd, *tmp;
 	struct fd f;
-	struct eventfd_ctx *eventfd = NULL;
+	struct eventfd_ctx *eventfd = NULL, *resamplefd = NULL;
 	int ret;
+	__poll_t events;
 	int idx;
 
 	irqfd = kzalloc(sizeof(*irqfd), GFP_KERNEL_ACCOUNT);
@@ -172,6 +289,7 @@ static int gzvm_irqfd_assign(struct gzvm *gzvm, struct gzvm_irqfd *args)
 
 	irqfd->gzvm = gzvm;
 	irqfd->gsi = args->gsi;
+	irqfd->resampler = NULL;
 
 	INIT_LIST_HEAD(&irqfd->list);
 	INIT_WORK(&irqfd->shutdown, irqfd_shutdown);
@@ -190,6 +308,55 @@ static int gzvm_irqfd_assign(struct gzvm *gzvm, struct gzvm_irqfd *args)
 
 	irqfd->eventfd = eventfd;
 
+	if (args->flags & GZVM_IRQFD_FLAG_RESAMPLE) {
+		struct gzvm_kernel_irqfd_resampler *resampler;
+
+		resamplefd = eventfd_ctx_fdget(args->resamplefd);
+		if (IS_ERR(resamplefd)) {
+			ret = PTR_ERR(resamplefd);
+			goto fail;
+		}
+
+		irqfd->resamplefd = resamplefd;
+		INIT_LIST_HEAD(&irqfd->resampler_link);
+
+		mutex_lock(&gzvm->irqfds.resampler_lock);
+
+		list_for_each_entry(resampler,
+				    &gzvm->irqfds.resampler_list, link) {
+			if (resampler->notifier.gsi == irqfd->gsi) {
+				irqfd->resampler = resampler;
+				break;
+			}
+		}
+
+		if (!irqfd->resampler) {
+			resampler = kzalloc(sizeof(*resampler),
+					    GFP_KERNEL_ACCOUNT);
+			if (!resampler) {
+				ret = -ENOMEM;
+				mutex_unlock(&gzvm->irqfds.resampler_lock);
+				goto fail;
+			}
+
+			resampler->gzvm = gzvm;
+			INIT_LIST_HEAD(&resampler->list);
+			resampler->notifier.gsi = irqfd->gsi;
+			resampler->notifier.irq_acked = irqfd_resampler_ack;
+			INIT_LIST_HEAD(&resampler->link);
+
+			list_add(&resampler->link, &gzvm->irqfds.resampler_list);
+			gzvm_register_irq_ack_notifier(gzvm,
+						       &resampler->notifier);
+			irqfd->resampler = resampler;
+		}
+
+		list_add_rcu(&irqfd->resampler_link, &irqfd->resampler->list);
+		synchronize_srcu(&gzvm->irq_srcu);
+
+		mutex_unlock(&gzvm->irqfds.resampler_lock);
+	}
+
 	/*
 	 * Install our own custom wake-up handling so we are notified via
 	 * a callback whenever someone signals the underlying eventfd
@@ -204,7 +371,7 @@ static int gzvm_irqfd_assign(struct gzvm *gzvm, struct gzvm_irqfd *args)
 		if (irqfd->eventfd != tmp->eventfd)
 			continue;
 		/* This fd is used for another irq already. */
-		pr_err("already used: gsi=%d fd=%d\n", args->gsi, args->fd);
+		GZVM_ERR("already used: gsi=%d fd=%d\n", args->gsi, args->fd);
 		ret = -EBUSY;
 		spin_unlock_irq(&gzvm->irqfds.lock);
 		goto fail;
@@ -216,7 +383,16 @@ static int gzvm_irqfd_assign(struct gzvm *gzvm, struct gzvm_irqfd *args)
 
 	spin_unlock_irq(&gzvm->irqfds.lock);
 
-	vfs_poll(f.file, &irqfd->pt);
+	/*
+	 * Check if there was an event already pending on the eventfd
+	 * before we registered, and trigger it as if we didn't miss it.
+	 */
+	events = vfs_poll(f.file, &irqfd->pt);
+
+	/* In case there is already a pending event */
+	if (events & EPOLLIN)
+		irqfd_set_spi(gzvm, GZVM_IRQFD_RESAMPLE_IRQ_SOURCE_ID,
+			      irqfd->gsi, 1, false);
 
 	srcu_read_unlock(&gzvm->irq_srcu, idx);
 
@@ -228,6 +404,12 @@ static int gzvm_irqfd_assign(struct gzvm *gzvm, struct gzvm_irqfd *args)
 	return 0;
 
 fail:
+	if (irqfd->resampler)
+		irqfd_resampler_shutdown(irqfd);
+
+	if (resamplefd && !IS_ERR(resamplefd))
+		eventfd_ctx_put(resamplefd);
+
 	if (eventfd && !IS_ERR(eventfd))
 		eventfd_ctx_put(eventfd);
 
@@ -297,11 +479,6 @@ static int gzvm_irqfd_deassign(struct gzvm *gzvm, struct gzvm_irqfd *args)
 
 int gzvm_irqfd(struct gzvm *gzvm, struct gzvm_irqfd *args)
 {
-	for (int i = 0; i < ARRAY_SIZE(args->pad); i++) {
-		if (args->pad[i])
-			return -EINVAL;
-	}
-
 	if (args->flags &
 	    ~(GZVM_IRQFD_FLAG_DEASSIGN | GZVM_IRQFD_FLAG_RESAMPLE))
 		return -EINVAL;
@@ -327,9 +504,11 @@ int gzvm_vm_irqfd_init(struct gzvm *gzvm)
 
 	spin_lock_init(&gzvm->irqfds.lock);
 	INIT_LIST_HEAD(&gzvm->irqfds.items);
+	INIT_LIST_HEAD(&gzvm->irqfds.resampler_list);
 	if (init_srcu_struct(&gzvm->irq_srcu))
 		return -EINVAL;
 	INIT_HLIST_HEAD(&gzvm->irq_ack_notifier_list);
+	mutex_init(&gzvm->irqfds.resampler_lock);
 
 	return 0;
 }

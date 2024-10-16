@@ -49,35 +49,105 @@ int gzvm_find_memslot(struct gzvm *vm, u64 gfn)
 }
 
 /**
- * register_memslot_addr_range() - Register memory region to GenieZone
- * @gzvm: Pointer to struct gzvm
- * @memslot: Pointer to struct gzvm_memslot
+ * fill_constituents() - Populate pa to buffer until full
+ * @consti: Pointer to struct mem_region_addr_range.
+ * @consti_cnt: Constituent count.
+ * @max_nr_consti: Maximum number of constituent count.
+ * @gfn: Guest frame number.
+ * @total_pages: Total page numbers.
+ * @slot: Pointer to struct gzvm_memslot.
  *
- * Return: 0 for success, negative number for error
+ * Return: how many pages we've fill in, negative if error
  */
+static int fill_constituents(struct mem_region_addr_range *consti,
+			     int *consti_cnt, int max_nr_consti, u64 gfn,
+			     u32 total_pages, struct gzvm_memslot *slot)
+{
+	u64 pfn, prev_pfn, gfn_end;
+	int nr_pages = 1;
+	int i = 0;
+
+	if (unlikely(total_pages == 0))
+		return -EINVAL;
+	gfn_end = gfn + total_pages;
+
+	/* entry 0 */
+	if (gzvm_gfn_to_pfn_memslot(slot, gfn, &pfn) != 0)
+		return -EFAULT;
+	consti[0].address = PFN_PHYS(pfn);
+	consti[0].pg_cnt = 1;
+	gfn++;
+	prev_pfn = pfn;
+
+	while (i < max_nr_consti && gfn < gfn_end) {
+		if (gzvm_gfn_to_pfn_memslot(slot, gfn, &pfn) != 0)
+			return -EFAULT;
+		if (pfn == (prev_pfn + 1)) {
+			consti[i].pg_cnt++;
+		} else {
+			i++;
+			if (i >= max_nr_consti)
+				break;
+			consti[i].address = PFN_PHYS(pfn);
+			consti[i].pg_cnt = 1;
+		}
+		prev_pfn = pfn;
+		gfn++;
+		nr_pages++;
+	}
+	if (i != max_nr_consti)
+		i++;
+	*consti_cnt = i;
+
+	return nr_pages;
+}
+
+/* register_memslot_addr_range() - Register memory region to GZ */
 static int
 register_memslot_addr_range(struct gzvm *gzvm, struct gzvm_memslot *memslot)
 {
 	struct gzvm_memory_region_ranges *region;
-	u32 buf_size = PAGE_SIZE * 2;
-	u64 gfn;
+	u32 buf_size;
+	int max_nr_consti, remain_pages;
+	u64 gfn, gfn_end;
 
+	buf_size = PAGE_SIZE * 2;
 	region = alloc_pages_exact(buf_size, GFP_KERNEL);
 	if (!region)
 		return -ENOMEM;
+	max_nr_consti = (buf_size - sizeof(*region)) /
+			sizeof(struct mem_region_addr_range);
 
 	region->slot = memslot->slot_id;
-	region->total_pages = memslot->npages;
+	remain_pages = memslot->npages;
 	gfn = memslot->base_gfn;
-	region->gpa = PFN_PHYS(gfn);
+	gfn_end = gfn + remain_pages;
+	while (gfn < gfn_end) {
+		int nr_pages;
 
-	if (gzvm_arch_set_memregion(gzvm->vm_id, buf_size,
-				    virt_to_phys(region))) {
-		pr_err("Failed to register memregion to hypervisor\n");
-		free_pages_exact(region, buf_size);
-		return -EFAULT;
+		nr_pages = fill_constituents(region->constituents,
+					     &region->constituent_cnt,
+					     max_nr_consti, gfn,
+					     remain_pages, memslot);
+		if (nr_pages < 0) {
+			pr_info("Failed to fill constituents\n");
+			free_pages_exact(region, buf_size);
+			return nr_pages;
+		}
+		region->gpa = PFN_PHYS(gfn);
+		region->total_pages = nr_pages;
+
+		remain_pages -= nr_pages;
+		gfn += nr_pages;
+
+		if (gzvm_arch_set_memregion(gzvm->vm_id, buf_size,
+					    virt_to_phys(region))) {
+			dev_info(gzvm_dev.this_device,
+				 "Failed to register memregion to hypervisor\n");
+			free_pages_exact(region, buf_size);
+			return -EFAULT;
+		}
 	}
-
 	free_pages_exact(region, buf_size);
 	return 0;
 }
@@ -87,11 +157,10 @@ register_memslot_addr_range(struct gzvm *gzvm, struct gzvm_memslot *memslot)
  * @gzvm: Pointer to struct gzvm.
  * @mem: Input memory region from user.
  *
- * Return: 0 for success, negative number for error
- *
- * -EXIO		- The memslot is out-of-range
- * -EFAULT		- Cannot find corresponding vma
- * -EINVAL		- Region size and VMA size mismatch
+ * Return:
+ * * -EXIO		- memslot is out-of-range
+ * * -EFAULT		- Cannot find corresponding vma
+ * * -EINVAL		- region size and vma size does not match
  */
 static int
 gzvm_vm_ioctl_set_memory_region(struct gzvm *gzvm,
@@ -125,30 +194,26 @@ gzvm_vm_ioctl_set_memory_region(struct gzvm *gzvm,
 
 	ret = gzvm_arch_memregion_purpose(gzvm, mem);
 	if (ret) {
-		pr_err("Failed to config memory region for the specified purpose\n");
+		dev_info(gzvm_dev.this_device,
+			"Failed to config memory region for the specified purpose\n");
 		return -EFAULT;
 	}
 	return register_memslot_addr_range(gzvm, memslot);
-}
-
-int gzvm_irqchip_inject_irq(struct gzvm *gzvm, unsigned int vcpu_idx,
-			    u32 irq, bool level)
-{
-	return gzvm_arch_inject_irq(gzvm, vcpu_idx, irq, level);
 }
 
 static int gzvm_vm_ioctl_irq_line(struct gzvm *gzvm,
 				  struct gzvm_irq_level *irq_level)
 {
 	u32 irq = irq_level->irq;
-	u32 vcpu_idx, vcpu2_idx, irq_num;
+	u32 irq_type, vcpu_idx, vcpu2_idx, irq_num;
 	bool level = irq_level->level;
 
+	irq_type = FIELD_GET(GZVM_IRQ_LINE_TYPE, irq);
 	vcpu_idx = FIELD_GET(GZVM_IRQ_LINE_VCPU, irq);
 	vcpu2_idx = FIELD_GET(GZVM_IRQ_LINE_VCPU2, irq) * (GZVM_IRQ_VCPU_MASK + 1);
 	irq_num = FIELD_GET(GZVM_IRQ_LINE_NUM, irq);
 
-	return gzvm_irqchip_inject_irq(gzvm, vcpu_idx + vcpu2_idx, irq_num,
+	return gzvm_irqchip_inject_irq(gzvm, vcpu_idx + vcpu2_idx, irq_type, irq_num,
 				       level);
 }
 
@@ -208,7 +273,7 @@ static int gzvm_vm_ioctl_enable_cap(struct gzvm *gzvm,
 static long gzvm_vm_ioctl(struct file *filp, unsigned int ioctl,
 			  unsigned long arg)
 {
-	long ret;
+	long ret = -ENOTTY;
 	void __user *argp = (void __user *)arg;
 	struct gzvm *gzvm = filp->private_data;
 
@@ -309,9 +374,8 @@ static void gzvm_destroy_ppage(struct gzvm *gzvm)
 
 static void gzvm_destroy_vm(struct gzvm *gzvm)
 {
-	size_t allocated_size;
-
-	pr_debug("VM-%u is going to be destroyed\n", gzvm->vm_id);
+	dev_info(gzvm_dev.this_device,
+		 "VM-%u is going to be destroyed\n", gzvm->vm_id);
 
 	mutex_lock(&gzvm->lock);
 
@@ -323,10 +387,8 @@ static void gzvm_destroy_vm(struct gzvm *gzvm)
 	list_del(&gzvm->vm_list);
 	mutex_unlock(&gzvm_list_lock);
 
-	if (gzvm->demand_page_buffer) {
-		allocated_size = GZVM_BLOCK_BASED_DEMAND_PAGE_SIZE / PAGE_SIZE * sizeof(u64);
-		free_pages_exact(gzvm->demand_page_buffer, allocated_size);
-	}
+	GZVM_INFO("%s, done exit %lld us", __func__,
+		  ktime_us_delta(ktime_get(), gzvm->exit_start_time));
 
 	mutex_unlock(&gzvm->lock);
 
@@ -348,46 +410,6 @@ static const struct file_operations gzvm_vm_fops = {
 	.unlocked_ioctl = gzvm_vm_ioctl,
 	.llseek		= noop_llseek,
 };
-
-/**
- * setup_vm_demand_paging - Query hypervisor suitable demand page size and set
- * @vm: gzvm instance for setting up demand page size
- *
- * Return: void
- */
-static void setup_vm_demand_paging(struct gzvm *vm)
-{
-	u32 buf_size = GZVM_BLOCK_BASED_DEMAND_PAGE_SIZE / PAGE_SIZE * sizeof(u64);
-	struct gzvm_enable_cap cap = {0};
-	void *buffer;
-	int ret;
-
-	mutex_init(&vm->demand_paging_lock);
-	buffer = alloc_pages_exact(buf_size, GFP_KERNEL);
-	if (!buffer) {
-		/* Fall back to use default page size for demand paging */
-		vm->demand_page_gran = PAGE_SIZE;
-		vm->demand_page_buffer = NULL;
-		return;
-	}
-
-	cap.cap = GZVM_CAP_BLOCK_BASED_DEMAND_PAGING;
-	cap.args[0] = GZVM_BLOCK_BASED_DEMAND_PAGE_SIZE;
-	cap.args[1] = (__u64)virt_to_phys(buffer);
-	/* demand_page_buffer is freed when destroy VM */
-	vm->demand_page_buffer = buffer;
-
-	ret = gzvm_vm_ioctl_enable_cap(vm, &cap, NULL);
-	if (ret == 0) {
-		vm->demand_page_gran = GZVM_BLOCK_BASED_DEMAND_PAGE_SIZE;
-		/* freed when destroy vm */
-		vm->demand_page_buffer = buffer;
-	} else {
-		vm->demand_page_gran = PAGE_SIZE;
-		vm->demand_page_buffer = NULL;
-		free_pages_exact(buffer, buf_size);
-	}
-}
 
 static struct gzvm *gzvm_create_vm(unsigned long vm_type)
 {
@@ -411,25 +433,25 @@ static struct gzvm *gzvm_create_vm(unsigned long vm_type)
 
 	ret = gzvm_vm_irqfd_init(gzvm);
 	if (ret) {
-		pr_err("Failed to initialize irqfd\n");
+		dev_info(gzvm_dev.this_device,
+			"Failed to initialize irqfd\n");
 		kfree(gzvm);
 		return ERR_PTR(ret);
 	}
 
 	ret = gzvm_init_ioeventfd(gzvm);
 	if (ret) {
-		pr_err("Failed to initialize ioeventfd\n");
+		dev_info(gzvm_dev.this_device,
+			"Failed to initialize ioeventfd\n");
 		kfree(gzvm);
 		return ERR_PTR(ret);
 	}
-
-	setup_vm_demand_paging(gzvm);
 
 	mutex_lock(&gzvm_list_lock);
 	list_add(&gzvm->vm_list, &gzvm_list);
 	mutex_unlock(&gzvm_list_lock);
 
-	pr_debug("VM-%u is created\n", gzvm->vm_id);
+	GZVM_INFO("VM-%u is created\n", gzvm->vm_id);
 
 	return gzvm;
 }
@@ -452,7 +474,7 @@ int gzvm_dev_ioctl_create_vm(unsigned long vm_type)
 			       O_RDWR | O_CLOEXEC);
 }
 
-void gzvm_destroy_all_vms(void)
+void destroy_all_vm(void)
 {
 	struct gzvm *gzvm, *tmp;
 

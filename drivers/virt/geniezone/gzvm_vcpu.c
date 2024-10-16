@@ -16,7 +16,7 @@
 #define ITOA_MAX_LEN 12
 
 static long gzvm_vcpu_update_one_reg(struct gzvm_vcpu *vcpu,
-				     void __user *argp,
+				     void * __user argp,
 				     bool is_write)
 {
 	struct gzvm_one_reg reg;
@@ -36,7 +36,8 @@ static long gzvm_vcpu_update_one_reg(struct gzvm_vcpu *vcpu,
 		return -EINVAL;
 
 	if (is_write) {
-		/* GZ hypervisor would filter out invalid vcpu register access */
+		if (vcpu->vcpuid > 0)
+			return -EPERM;
 		if (copy_from_user(&data, reg_addr, reg_size))
 			return -EFAULT;
 	} else {
@@ -85,7 +86,7 @@ static bool gzvm_vcpu_handle_mmio(struct gzvm_vcpu *vcpu)
  * * 0			- Success.
  * * Negative		- Failure.
  */
-static long gzvm_vcpu_run(struct gzvm_vcpu *vcpu, void __user *argp)
+static long gzvm_vcpu_run(struct gzvm_vcpu *vcpu, void * __user argp)
 {
 	bool need_userspace = false;
 	u64 exit_reason = 0;
@@ -93,13 +94,10 @@ static long gzvm_vcpu_run(struct gzvm_vcpu *vcpu, void __user *argp)
 	if (copy_from_user(vcpu->run, argp, sizeof(struct gzvm_vcpu_run)))
 		return -EFAULT;
 
-	for (int i = 0; i < ARRAY_SIZE(vcpu->run->padding1); i++) {
-		if (vcpu->run->padding1[i])
-			return -EINVAL;
-	}
-
-	if (vcpu->run->immediate_exit == 1)
+	if (vcpu->run->immediate_exit == 1) {
+		vcpu->gzvm->exit_start_time = ktime_get();
 		return -EINTR;
+	}
 
 	while (!need_userspace && !signal_pending(current)) {
 		gzvm_arch_vcpu_run(vcpu, &exit_reason);
@@ -113,12 +111,12 @@ static long gzvm_vcpu_run(struct gzvm_vcpu *vcpu, void __user *argp)
 		 * it's geniezone's responsibility to fill corresponding data
 		 * structure
 		 */
-		case GZVM_EXIT_HYPERCALL:
-			if (!gzvm_handle_guest_hvc(vcpu))
-				need_userspace = true;
-			break;
 		case GZVM_EXIT_EXCEPTION:
 			if (!gzvm_handle_guest_exception(vcpu))
+				need_userspace = true;
+			break;
+		case GZVM_EXIT_HYPERCALL:
+			if (!gzvm_handle_guest_hvc(vcpu))
 				need_userspace = true;
 			break;
 		case GZVM_EXIT_DEBUG:
@@ -139,7 +137,7 @@ static long gzvm_vcpu_run(struct gzvm_vcpu *vcpu, void __user *argp)
 		case GZVM_EXIT_UNKNOWN:
 			fallthrough;
 		default:
-			pr_err("vcpu unknown exit\n");
+			dev_info(gzvm_dev.this_device, "vcpu unknown exit\n");
 			need_userspace = true;
 			goto out;
 		}
@@ -149,6 +147,7 @@ out:
 	if (copy_to_user(argp, vcpu->run, sizeof(struct gzvm_vcpu_run)))
 		return -EFAULT;
 	if (signal_pending(current)) {
+		vcpu->gzvm->exit_start_time = ktime_get();
 		// invoke hvc to inform gz to map memory
 		gzvm_arch_inform_exit(vcpu->gzvm->vm_id);
 		return -ERESTARTSYS;
@@ -193,7 +192,7 @@ static void gzvm_destroy_vcpu(struct gzvm_vcpu *vcpu)
 	if (!vcpu)
 		return;
 
-	gzvm_arch_destroy_vcpu(vcpu->gzvm->vm_id, vcpu->vcpuid);
+	gzvm_arch_destroy_vcpu(vcpu);
 	/* clean guest's data */
 	memset(vcpu->run, 0, GZVM_VCPU_RUN_MAP_SIZE);
 	free_pages_exact(vcpu->run, GZVM_VCPU_RUN_MAP_SIZE);
@@ -262,7 +261,7 @@ int gzvm_vm_ioctl_create_vcpu(struct gzvm *gzvm, u32 cpuid)
 	vcpu->gzvm = gzvm;
 	mutex_init(&vcpu->lock);
 
-	ret = gzvm_arch_create_vcpu(gzvm->vm_id, vcpu->vcpuid, vcpu->run);
+	ret = gzvm_arch_create_vcpu(vcpu);
 	if (ret < 0)
 		goto free_vcpu_run;
 
