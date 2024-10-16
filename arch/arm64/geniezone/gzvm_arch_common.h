@@ -25,7 +25,6 @@ enum {
 	GZVM_FUNC_MEMREGION_PURPOSE = 15,
 	GZVM_FUNC_SET_DTB_CONFIG = 16,
 	GZVM_FUNC_MAP_GUEST = 17,
-	GZVM_FUNC_MAP_GUEST_BLOCK = 18,
 	NR_GZVM_FUNC,
 };
 
@@ -51,9 +50,17 @@ enum {
 #define MT_HVC_GZVM_MEMREGION_PURPOSE	GZVM_HCALL_ID(GZVM_FUNC_MEMREGION_PURPOSE)
 #define MT_HVC_GZVM_SET_DTB_CONFIG	GZVM_HCALL_ID(GZVM_FUNC_SET_DTB_CONFIG)
 #define MT_HVC_GZVM_MAP_GUEST		GZVM_HCALL_ID(GZVM_FUNC_MAP_GUEST)
-#define MT_HVC_GZVM_MAP_GUEST_BLOCK	GZVM_HCALL_ID(GZVM_FUNC_MAP_GUEST_BLOCK)
 
 #define GIC_V3_NR_LRS			16
+
+#define GZVM_VTIMER_IRQ			27
+
+struct timecycle {
+	u32 mult;
+	u32 shift;
+};
+
+extern struct timecycle clock_scale_factor;
 
 /**
  * gzvm_hypcall_wrapper() - the wrapper for hvc calls
@@ -69,7 +76,7 @@ static inline int gzvm_hypcall_wrapper(unsigned long a0, unsigned long a1,
 				       struct arm_smccc_res *res)
 {
 	arm_smccc_hvc(a0, a1, a2, a3, a4, a5, a6, a7, res);
-	return gzvm_err_to_errno(res->a0);
+	return gz_err_to_errno(res->a0);
 }
 
 static inline u16 get_vmid_from_tuple(unsigned int tuple)
@@ -88,14 +95,20 @@ static inline u16 get_vcpuid_from_tuple(unsigned int tuple)
  * @__pad: add an explicit '__u32 __pad;' in the middle to make it clear
  *         what the actual layout is.
  * @lr: The array of LRs(list registers).
+ * @vtimer_delay: The remaining time until the next tick of guest VM.
+ * @vtimer_migrate: The switch flag used for guest VM to do vtimer migration or not.
  *
  * - Keep the same layout of hypervisor data struct.
  * - Sync list registers back for acking virtual device interrupt status.
+ * - Sync timer registers back for migrating timer to host's hwtimer to keep
+ *   timer working in background.
  */
 struct gzvm_vcpu_hwstate {
 	__le32 nr_lrs;
 	__le32 __pad;
 	__le64 lr[GIC_V3_NR_LRS];
+	__le64 vtimer_delay;
+	__le32 vtimer_migrate;
 };
 
 static inline unsigned int
@@ -110,5 +123,8 @@ disassemble_vm_vcpu_tuple(unsigned int tuple, u16 *vmid, u16 *vcpuid)
 	*vmid = get_vmid_from_tuple(tuple);
 	*vcpuid = get_vcpuid_from_tuple(tuple);
 }
+
+int gzvm_vgic_inject_ppi(struct gzvm *gzvm, unsigned int vcpu_idx,
+			 u32 irq, bool level);
 
 #endif /* __GZVM_ARCH_COMMON_H__ */

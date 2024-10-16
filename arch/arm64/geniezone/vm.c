@@ -3,6 +3,7 @@
  * Copyright (c) 2023 MediaTek Inc.
  */
 
+#include <asm/sysreg.h>
 #include <linux/arm-smccc.h>
 #include <linux/err.h>
 #include <linux/uaccess.h>
@@ -29,10 +30,10 @@ int gzvm_arch_probe(void)
 	struct arm_smccc_res res;
 
 	arm_smccc_hvc(MT_HVC_GZVM_PROBE, 0, 0, 0, 0, 0, 0, 0, &res);
-	if (res.a0)
-		return -ENXIO;
+	if (res.a0 == 0)
+		return 0;
 
-	return 0;
+	return -ENXIO;
 }
 
 int gzvm_arch_set_memregion(u16 vm_id, size_t buf_size,
@@ -44,7 +45,7 @@ int gzvm_arch_set_memregion(u16 vm_id, size_t buf_size,
 				    buf_size, region, 0, 0, 0, 0, &res);
 }
 
-static int gzvm_cap_vm_gpa_size(void __user *argp)
+static int gzvm_cap_arm_vm_ipa_size(void __user *argp)
 {
 	__u64 value = CONFIG_ARM64_PA_BITS;
 
@@ -56,26 +57,26 @@ static int gzvm_cap_vm_gpa_size(void __user *argp)
 
 int gzvm_arch_check_extension(struct gzvm *gzvm, __u64 cap, void __user *argp)
 {
-	int ret;
+	int ret = -EOPNOTSUPP;
 
 	switch (cap) {
-	case GZVM_CAP_PROTECTED_VM: {
+	case GZVM_CAP_ARM_PROTECTED_VM: {
 		__u64 success = 1;
 
 		if (copy_to_user(argp, &success, sizeof(__u64)))
 			return -EFAULT;
-
-		return 0;
-	}
-	case GZVM_CAP_VM_GPA_SIZE: {
-		ret = gzvm_cap_vm_gpa_size(argp);
-		return ret;
-	}
-	default:
+		ret = 0;
 		break;
 	}
+	case GZVM_CAP_ARM_VM_IPA_SIZE: {
+		ret = gzvm_cap_arm_vm_ipa_size(argp);
+		break;
+	}
+	default:
+		ret = -EOPNOTSUPP;
+	}
 
-	return -EOPNOTSUPP;
+	return ret;
 }
 
 /**
@@ -93,7 +94,11 @@ int gzvm_arch_create_vm(unsigned long vm_type)
 
 	ret = gzvm_hypcall_wrapper(MT_HVC_GZVM_CREATE_VM, vm_type, 0, 0, 0, 0,
 				   0, 0, &res);
-	return ret ? ret : res.a1;
+
+	if (ret == 0)
+		return res.a1;
+	else
+		return ret;
 }
 
 int gzvm_arch_destroy_vm(u16 vm_id)
@@ -162,123 +167,7 @@ static int gzvm_vm_ioctl_get_pvmfw_size(struct gzvm *gzvm,
 }
 
 /**
- * fill_constituents() - Populate pa to buffer until full
- * @consti: Pointer to struct mem_region_addr_range.
- * @consti_cnt: Constituent count.
- * @max_nr_consti: Maximum number of constituent count.
- * @gfn: Guest frame number.
- * @total_pages: Total page numbers.
- * @slot: Pointer to struct gzvm_memslot.
- *
- * Return: how many pages we've fill in, negative if error
- */
-static int fill_constituents(struct mem_region_addr_range *consti,
-			     int *consti_cnt, int max_nr_consti, u64 gfn,
-			     u32 total_pages, struct gzvm_memslot *slot)
-{
-	u64 pfn, prev_pfn, gfn_end;
-	int nr_pages = 1;
-	int i = 0;
-
-	if (unlikely(total_pages == 0))
-		return -EINVAL;
-	gfn_end = gfn + total_pages;
-
-	/* entry 0 */
-	if (gzvm_gfn_to_pfn_memslot(slot, gfn, &pfn) != 0)
-		return -EFAULT;
-	consti[0].address = PFN_PHYS(pfn);
-	consti[0].pg_cnt = 1;
-	gfn++;
-	prev_pfn = pfn;
-
-	while (i < max_nr_consti && gfn < gfn_end) {
-		if (gzvm_gfn_to_pfn_memslot(slot, gfn, &pfn) != 0)
-			return -EFAULT;
-		if (pfn == (prev_pfn + 1)) {
-			consti[i].pg_cnt++;
-		} else {
-			i++;
-			if (i >= max_nr_consti)
-				break;
-			consti[i].address = PFN_PHYS(pfn);
-			consti[i].pg_cnt = 1;
-		}
-		prev_pfn = pfn;
-		gfn++;
-		nr_pages++;
-	}
-	if (i != max_nr_consti)
-		i++;
-	*consti_cnt = i;
-
-	return nr_pages;
-}
-
-/**
- * populate_mem_region() - Iterate all mem slot and populate pa to buffer until it's full
- * @gzvm: Pointer to struct gzvm.
- *
- * Return: 0 if it is successful, negative if error
- */
-static int populate_mem_region(struct gzvm *gzvm)
-{
-	int slot_cnt = 0;
-
-	while (slot_cnt < GZVM_MAX_MEM_REGION && gzvm->memslot[slot_cnt].npages != 0) {
-		struct gzvm_memslot *memslot = &gzvm->memslot[slot_cnt];
-		struct gzvm_memory_region_ranges *region;
-		int max_nr_consti, remain_pages;
-		u64 gfn, gfn_end;
-		u32 buf_size;
-
-		buf_size = PAGE_SIZE * 2;
-		region = alloc_pages_exact(buf_size, GFP_KERNEL);
-		if (!region)
-			return -ENOMEM;
-
-		max_nr_consti = (buf_size - sizeof(*region)) /
-				sizeof(struct mem_region_addr_range);
-
-		region->slot = memslot->slot_id;
-		remain_pages = memslot->npages;
-		gfn = memslot->base_gfn;
-		gfn_end = gfn + remain_pages;
-
-		while (gfn < gfn_end) {
-			int nr_pages;
-
-			nr_pages = fill_constituents(region->constituents,
-						     &region->constituent_cnt,
-						     max_nr_consti, gfn,
-						     remain_pages, memslot);
-
-			if (nr_pages < 0) {
-				pr_err("Failed to fill constituents\n");
-				free_pages_exact(region, buf_size);
-				return -EFAULT;
-			}
-
-			region->gpa = PFN_PHYS(gfn);
-			region->total_pages = nr_pages;
-			remain_pages -= nr_pages;
-			gfn += nr_pages;
-
-			if (gzvm_arch_set_memregion(gzvm->vm_id, buf_size,
-						    virt_to_phys(region))) {
-				pr_err("Failed to register memregion to hypervisor\n");
-				free_pages_exact(region, buf_size);
-				return -EFAULT;
-			}
-		}
-		free_pages_exact(region, buf_size);
-		++slot_cnt;
-	}
-	return 0;
-}
-
-/**
- * gzvm_vm_ioctl_cap_pvm() - Proceed GZVM_CAP_PROTECTED_VM's subcommands
+ * gzvm_vm_ioctl_cap_pvm() - Proceed GZVM_CAP_ARM_PROTECTED_VM's subcommands
  * @gzvm: Pointer to struct gzvm.
  * @cap: Pointer to struct gzvm_enable_cap.
  * @argp: Pointer to struct gzvm_enable_cap in user space.
@@ -291,62 +180,54 @@ static int gzvm_vm_ioctl_cap_pvm(struct gzvm *gzvm,
 				 struct gzvm_enable_cap *cap,
 				 void __user *argp)
 {
+	int ret = -EINVAL;
 	struct arm_smccc_res res = {0};
-	int ret;
 
 	switch (cap->args[0]) {
-	case GZVM_CAP_PVM_SET_PVMFW_GPA:
+	case GZVM_CAP_ARM_PVM_SET_PVMFW_IPA:
 		fallthrough;
-	case GZVM_CAP_PVM_SET_PROTECTED_VM:
-		/*
-		 * If the hypervisor doesn't support block-based demand paging, we
-		 * populate memory in advance to improve performance for protected VM.
-		 */
-		if (gzvm->demand_page_gran == PAGE_SIZE)
-			populate_mem_region(gzvm);
+	case GZVM_CAP_ARM_PVM_SET_PROTECTED_VM:
 		ret = gzvm_vm_arch_enable_cap(gzvm, cap, &res);
-		return ret;
-	case GZVM_CAP_PVM_GET_PVMFW_SIZE:
+		break;
+	case GZVM_CAP_ARM_PVM_GET_PVMFW_SIZE:
 		ret = gzvm_vm_ioctl_get_pvmfw_size(gzvm, cap, argp);
-		return ret;
+		break;
 	default:
+		ret = -EINVAL;
 		break;
 	}
 
-	return -EINVAL;
+	return ret;
 }
 
 int gzvm_vm_ioctl_arch_enable_cap(struct gzvm *gzvm,
 				  struct gzvm_enable_cap *cap,
 				  void __user *argp)
 {
-	struct arm_smccc_res res = {0};
-	int ret;
+	int ret = -EINVAL;
 
 	switch (cap->cap) {
-	case GZVM_CAP_PROTECTED_VM:
+	case GZVM_CAP_ARM_PROTECTED_VM:
 		ret = gzvm_vm_ioctl_cap_pvm(gzvm, cap, argp);
-		return ret;
-	case GZVM_CAP_BLOCK_BASED_DEMAND_PAGING:
-		ret = gzvm_vm_arch_enable_cap(gzvm, cap, &res);
-		return ret;
+		break;
 	default:
+		ret = -EINVAL;
 		break;
 	}
 
-	return -EINVAL;
+	return ret;
 }
 
 /**
- * gzvm_hva_to_pa_arch() - converts hva to pa with arch-specific way
+ * hva_to_pa_arch() - converts hva to pa with arch-specific way
  * @hva: Host virtual address.
  *
- * Return: GZVM_PA_ERR_BAD for translation error
+ * Return: 0 if translation error
  */
-u64 gzvm_hva_to_pa_arch(u64 hva)
+u64 hva_to_pa_arch(u64 hva)
 {
-	unsigned long flags;
 	u64 par;
+	unsigned long flags;
 
 	local_irq_save(flags);
 	asm volatile("at s1e1r, %0" :: "r" (hva));
@@ -355,11 +236,9 @@ u64 gzvm_hva_to_pa_arch(u64 hva)
 	local_irq_restore(flags);
 
 	if (par & SYS_PAR_EL1_F)
-		return GZVM_PA_ERR_BAD;
-	par = par & PAR_PA47_MASK;
-	if (!par)
-		return GZVM_PA_ERR_BAD;
-	return par;
+		return 0;
+
+	return par & PAR_PA47_MASK;
 }
 
 int gzvm_arch_map_guest(u16 vm_id, int memslot_id, u64 pfn, u64 gfn,
@@ -369,12 +248,4 @@ int gzvm_arch_map_guest(u16 vm_id, int memslot_id, u64 pfn, u64 gfn,
 
 	return gzvm_hypcall_wrapper(MT_HVC_GZVM_MAP_GUEST, vm_id, memslot_id,
 				    pfn, gfn, nr_pages, 0, 0, &res);
-}
-
-int gzvm_arch_map_guest_block(u16 vm_id, int memslot_id, u64 gfn, u64 nr_pages)
-{
-	struct arm_smccc_res res;
-
-	return gzvm_hypcall_wrapper(MT_HVC_GZVM_MAP_GUEST_BLOCK, vm_id,
-				    memslot_id, gfn, nr_pages, 0, 0, 0, &res);
 }
