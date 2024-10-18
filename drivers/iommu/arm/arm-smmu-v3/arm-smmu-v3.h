@@ -3,6 +3,7 @@
  * IOMMU API for ARM architected SMMUv3 implementations.
  *
  * Copyright (C) 2015 ARM Limited
+ * Copyright (c) 2023 MediaTek Inc.
  */
 
 #ifndef _ARM_SMMU_V3_H
@@ -51,6 +52,7 @@
 #define IDR1_SIDSIZE			GENMASK(5, 0)
 
 #define ARM_SMMU_IDR3			0xc
+#define IDR3_MPAM			(1 << 7)
 #define IDR3_RIL			(1 << 10)
 
 #define ARM_SMMU_IDR5			0x14
@@ -68,12 +70,6 @@
 #define IDR5_OAS_52_BIT			6
 #define IDR5_VAX			GENMASK(11, 10)
 #define IDR5_VAX_52_BIT			1
-
-#define ARM_SMMU_IIDR			0x18
-#define IIDR_PRODUCTID			GENMASK(31, 20)
-#define IIDR_VARIANT			GENMASK(19, 16)
-#define IIDR_REVISION			GENMASK(15, 12)
-#define IIDR_IMPLEMENTER		GENMASK(11, 0)
 
 #define ARM_SMMU_CR0			0x20
 #define CR0_ATSCHK			(1 << 4)
@@ -158,7 +154,20 @@
 #define ARM_SMMU_PRIQ_IRQ_CFG1		0xd8
 #define ARM_SMMU_PRIQ_IRQ_CFG2		0xdc
 
+/* SMMU MPAM */
+#define ARM_SMMU_MPAMIDR		0x130
+#define SMMU_MPAMIDR_PARTID_MAX		GENMASK(15, 0)
+#define SMMU_MPAMIDR_PMG_MAX		GENMASK(23, 16)
+
+/* SMMU GMPAM */
+#define ARM_SMMU_GMPAM			0x138
+#define SMMU_GMPAM_SO_PARTID		GENMASK(15, 0)
+#define SMMU_GMPAM_SO_PMG		GENMASK(23, 16)
+#define SMMU_GMPAM_UPADTE		(1 << 31)
+
 #define ARM_SMMU_REG_SZ			0xe00
+#define SMMUWP_REG_SZ			0x800
+#define SMMUWP_OFFSET			0x1ff000
 
 /* Common MSI config fields */
 #define MSI_CFG0_ADDR_MASK		GENMASK_ULL(51, 2)
@@ -239,6 +248,12 @@
 #define STRTAB_STE_1_EATS_TRANS		1UL
 #define STRTAB_STE_1_EATS_S1CHK		2UL
 
+#define STRTAB_STE_1_TCU_PF		GENMASK_ULL(57, 56)
+#define STRTAB_STE_1_TCU_PF_DIS		0UL
+#define STRTAB_STE_1_TCU_PF_RSV		1UL
+#define STRTAB_STE_1_TCU_PF_FP		2UL
+#define STRTAB_STE_1_TCU_PF_BP		3UL
+
 #define STRTAB_STE_1_STRW		GENMASK_ULL(31, 30)
 #define STRTAB_STE_1_STRW_NSEL1		0UL
 #define STRTAB_STE_1_STRW_EL2		2UL
@@ -261,6 +276,10 @@
 #define STRTAB_STE_2_S2R		(1UL << 58)
 
 #define STRTAB_STE_3_S2TTB_MASK		GENMASK_ULL(51, 4)
+
+#define STRTAB_STE_4_PARTID		GENMASK_ULL(31, 16)
+
+#define STRTAB_STE_5_PMG		GENMASK_ULL(7, 0)
 
 /*
  * Context descriptors.
@@ -425,6 +444,15 @@
 
 #define MSI_IOVA_BASE			0x8000000
 #define MSI_IOVA_LENGTH			0x100000
+
+/* MTK iommu device features */
+#define MTK_IOMMU_DEV_FEAT_BASE			20
+/**
+ * @IOMMU_DEV_FEAT_BYPASS_S1: Bypass smmu stage 1 by StreamID
+ *
+ */
+#define IOMMU_DEV_FEAT_BYPASS_S1		(MTK_IOMMU_DEV_FEAT_BASE + 0)
+#define MASTER_FEATURE_COUNT_EXTENDED		(MTK_IOMMU_DEV_FEAT_BASE + 1)
 
 enum pri_resp {
 	PRI_RESP_DENY = 0,
@@ -625,6 +653,7 @@ struct arm_smmu_device {
 	struct device			*dev;
 	void __iomem			*base;
 	void __iomem			*page1;
+	void __iomem			*wp_base;
 
 #define ARM_SMMU_FEAT_2_LVL_STRTAB	(1 << 0)
 #define ARM_SMMU_FEAT_2_LVL_CDTAB	(1 << 1)
@@ -645,14 +674,16 @@ struct arm_smmu_device {
 #define ARM_SMMU_FEAT_BTM		(1 << 16)
 #define ARM_SMMU_FEAT_SVA		(1 << 17)
 #define ARM_SMMU_FEAT_E2H		(1 << 18)
-#define ARM_SMMU_FEAT_NESTING		(1 << 19)
+#define ARM_SMMU_FEAT_MPAM		(1 << 19)
+#define ARM_SMMU_FEAT_TCU_PF		(1 << 20)
 	u32				features;
 
 #define ARM_SMMU_OPT_SKIP_PREFETCH	(1 << 0)
 #define ARM_SMMU_OPT_PAGE0_REGS_ONLY	(1 << 1)
 #define ARM_SMMU_OPT_MSIPOLL		(1 << 2)
-#define ARM_SMMU_OPT_CMDQ_FORCE_SYNC	(1 << 3)
 	u32				options;
+
+	const struct arm_smmu_impl	*impl;
 
 	struct arm_smmu_cmdq		cmdq;
 	struct arm_smmu_evtq		evtq;
@@ -682,6 +713,8 @@ struct arm_smmu_device {
 
 	struct rb_root			streams;
 	struct mutex			streams_mutex;
+
+	struct mutex			init_mutex;
 };
 
 struct arm_smmu_stream {
@@ -704,6 +737,8 @@ struct arm_smmu_master {
 	bool				iopf_enabled;
 	struct list_head		bonds;
 	unsigned int			ssid_bits;
+	/* Mediatek proprietary */
+	DECLARE_BITMAP(features, MASTER_FEATURE_COUNT_EXTENDED);
 };
 
 /* SMMU private data for an IOMMU domain */
@@ -741,6 +776,48 @@ static inline struct arm_smmu_domain *to_smmu_domain(struct iommu_domain *dom)
 	return container_of(dom, struct arm_smmu_domain, domain);
 }
 
+struct arm_smmu_impl {
+	struct iommu_group* (*device_group)(struct device *dev);
+	bool (*delay_hw_init)(struct arm_smmu_device *smmu);
+	int (*smmu_hw_init)(struct arm_smmu_device *smmu);
+	int (*smmu_hw_deinit)(struct arm_smmu_device *smmu);
+	int (*smmu_hw_sec_init)(struct arm_smmu_device *smmu);
+	int (*smmu_power_get)(struct arm_smmu_device *smmu);
+	int (*smmu_power_put)(struct arm_smmu_device *smmu);
+	int (*smmu_runtime_suspend)(struct device *dev);
+	int (*smmu_runtime_resume)(struct device *dev);
+	void (*get_resv_regions)(struct device *dev, struct list_head *head);
+	int (*smmu_irq_handler)(int irq, void *dev);
+	int (*smmu_evt_handler)(int irq, void *dev, u64 *evt);
+	int (*report_device_fault)(struct arm_smmu_device *smmu,
+				   struct arm_smmu_master *master,
+				   u64 *evt,
+				   struct iommu_fault_event *fault_evt);
+	void (*smmu_setup_features)(struct arm_smmu_master *master,
+				    u32 sid, __le64 *dst);
+	int (*def_domain_type)(struct device *dev);
+	bool (*dev_has_feature)(struct device *dev,
+				enum iommu_dev_features feat);
+	bool (*dev_feature_enabled)(struct device *dev,
+				    enum iommu_dev_features feat);
+	bool (*dev_enable_feature)(struct device *dev,
+				   enum iommu_dev_features feat);
+	bool (*dev_disable_feature)(struct device *dev,
+				    enum iommu_dev_features feat);
+	void (*iotlb_sync_map)(struct iommu_domain *domain,
+			       unsigned long iova, size_t size);
+	void (*iotlb_sync)(struct iommu_domain *domain,
+			   struct iommu_iotlb_gather *gather);
+	void (*tlb_flush)(struct arm_smmu_domain *smmu_domain,
+			  unsigned long iova, size_t size,
+			  int power_status);
+	void (*fault_dump)(struct arm_smmu_device *smmu);
+	bool (*skip_shutdown)(struct arm_smmu_device *smmu);
+};
+
+struct arm_smmu_device *arm_smmu_v3_impl_init(struct arm_smmu_device *smmu);
+struct arm_smmu_device *mtk_smmu_v3_impl_init(struct arm_smmu_device *smmu);
+
 extern struct xarray arm_smmu_asid_xa;
 extern struct mutex arm_smmu_asid_lock;
 extern struct arm_smmu_ctx_desc quiet_cd;
@@ -755,6 +832,18 @@ bool arm_smmu_free_asid(struct arm_smmu_ctx_desc *cd);
 int arm_smmu_atc_inv_domain(struct arm_smmu_domain *smmu_domain, int ssid,
 			    unsigned long iova, size_t size);
 
+void arm_smmu_sync_ste_for_sid(struct arm_smmu_device *smmu, u32 sid);
+int arm_smmu_cmdq_issue_cmd(struct arm_smmu_device *smmu,
+			    struct arm_smmu_cmdq_ent *ent);
+void arm_smmu_cmdq_batch_add(struct arm_smmu_device *smmu,
+			     struct arm_smmu_cmdq_batch *cmds,
+			     struct arm_smmu_cmdq_ent *cmd);
+int arm_smmu_cmdq_batch_submit(struct arm_smmu_device *smmu,
+			       struct arm_smmu_cmdq_batch *cmds);
+int arm_smmu_init_sid_strtab(struct arm_smmu_device *smmu, u32 sid);
+struct arm_smmu_master *arm_smmu_find_master(struct arm_smmu_device *smmu,
+					     u32 sid);
+
 #ifdef CONFIG_ARM_SMMU_V3_SVA
 bool arm_smmu_sva_supported(struct arm_smmu_device *smmu);
 bool arm_smmu_master_sva_supported(struct arm_smmu_master *master);
@@ -763,9 +852,6 @@ int arm_smmu_master_enable_sva(struct arm_smmu_master *master);
 int arm_smmu_master_disable_sva(struct arm_smmu_master *master);
 bool arm_smmu_master_iopf_supported(struct arm_smmu_master *master);
 void arm_smmu_sva_notifier_synchronize(void);
-struct iommu_domain *arm_smmu_sva_domain_alloc(void);
-void arm_smmu_sva_remove_dev_pasid(struct iommu_domain *domain,
-				   struct device *dev, ioasid_t id);
 #else /* CONFIG_ARM_SMMU_V3_SVA */
 static inline bool arm_smmu_sva_supported(struct arm_smmu_device *smmu)
 {
@@ -798,16 +884,5 @@ static inline bool arm_smmu_master_iopf_supported(struct arm_smmu_master *master
 }
 
 static inline void arm_smmu_sva_notifier_synchronize(void) {}
-
-static inline struct iommu_domain *arm_smmu_sva_domain_alloc(void)
-{
-	return NULL;
-}
-
-static inline void arm_smmu_sva_remove_dev_pasid(struct iommu_domain *domain,
-						 struct device *dev,
-						 ioasid_t id)
-{
-}
 #endif /* CONFIG_ARM_SMMU_V3_SVA */
 #endif /* _ARM_SMMU_V3_H */
