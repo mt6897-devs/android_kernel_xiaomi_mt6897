@@ -35,9 +35,9 @@
 #include <linux/build_bug.h>
 #include <clk-fmeter.h>
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MFD_MT6397)
+#if IS_ENABLED(CONFIG_MFD_MT6397)
 #include <linux/mfd/mt6397/core.h>
-#endif /* IS_ENABLED(CONFIG_DEVICE_MODULES_MFD_MT6397) */
+#endif /* IS_ENABLED(CONFIG_MFD_MT6397) */
 
 #if IS_ENABLED(CONFIG_OF)
 #include <linux/of.h>
@@ -56,7 +56,7 @@
 #endif
 #define pr_fmt(fmt)			"[scp_dvfs]: " fmt
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MFD_MT6397)
+#if IS_ENABLED(CONFIG_MFD_MT6397)
 #define pmic_main_chip			mt6397_chip
 #endif
 

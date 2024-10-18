@@ -291,7 +291,7 @@ s32 cmdq_mdp_get_smi_usage(void)
 
 static s32 cmdq_mdp_enable_common_clock(bool enable, u64 engine_flag)
 {
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_SMI)
+#if IS_ENABLED(CONFIG_MTK_SMI)
 	struct device *larb, *mdpdev;
 	int ret;
 

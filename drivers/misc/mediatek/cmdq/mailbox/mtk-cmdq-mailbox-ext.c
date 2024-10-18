@@ -1292,7 +1292,7 @@ static void cmdq_thread_irq_handler(struct cmdq *cmdq,
 	s32 err = 0;
 	unsigned long flags;
 	bool task_done = false;
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_ARM_SMMU_V3)
+#if IS_ENABLED(CONFIG_ARM_SMMU_V3)
 	bool ret = false;
 	u32 axid[1];
 #endif
@@ -1312,7 +1312,7 @@ static void cmdq_thread_irq_handler(struct cmdq *cmdq,
 	irq_flag = readl(thread->base + CMDQ_THR_IRQ_STATUS);
 	if (cmdq->error_irq_sw_req && (irq_flag & CMDQ_THR_IRQ_ERROR)) {
 		//dump smmu rg
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_ARM_SMMU_V3)
+#if IS_ENABLED(CONFIG_ARM_SMMU_V3)
 		if (cmdq->smmu_v3_enabled) {
 			axid[0] = cmdq->axid;
 			ret = cmdq_util_controller->check_tf(cmdq->mbox.dev,
@@ -1385,7 +1385,7 @@ static void cmdq_thread_irq_handler(struct cmdq *cmdq,
 
 		cmdq_thread_dump_pkt_by_pc(thread, curr_pa, true);
 	}
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_ARM_SMMU_V3)
+#if IS_ENABLED(CONFIG_ARM_SMMU_V3)
 	if (cmdq->smmu_v3_enabled) {
 		axid[0] = cmdq->axid;
 		ret = cmdq_util_controller->check_tf(cmdq->mbox.dev,
@@ -2901,7 +2901,7 @@ static int cmdq_probe(struct platform_device *pdev)
 	cmdq_msg("%s tf_high_addr:%x", __func__, cmdq->tf_high_addr);
 #endif
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_ARM_SMMU_V3)
+#if IS_ENABLED(CONFIG_ARM_SMMU_V3)
 	cmdq->smmu_v3_enabled = smmu_v3_enabled();
 	cmdq_msg("%s smmu_v3_enable:%d", __func__, cmdq->smmu_v3_enabled);
 #endif

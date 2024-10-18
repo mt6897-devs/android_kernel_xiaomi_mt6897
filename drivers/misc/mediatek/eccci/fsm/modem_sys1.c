@@ -201,7 +201,7 @@ static int md_cd_start(struct ccci_modem *md)
 
 static int check_power_off_en(struct ccci_modem *md)
 {
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 	int smem_val = 1;
 #else
 	int smem_val = 0;
@@ -248,13 +248,13 @@ void md1_sleep_timeout_proc(struct ccci_modem *md)
 	int en_power_check = check_power_off_en(md);
 
 	if (en_power_check
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 		&& atomic_read(&md_dapc_ke_occurred)
 #endif
 		) {
 		CCCI_NORMAL_LOG(0, TAG,
 			"MD is not in sleep mode, dump md status!\n");
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 		atomic_set(&en_flight_timeout, 1);
 #endif
 		CCCI_MEM_LOG_TAG(0, TAG, "Dump MD EX log\n");

@@ -38,7 +38,7 @@ ccflags-y += -DCCCI_KMODULE_ENABLE
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/eccci/udc/udc_lib_inc
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/eccci/
 
-ifneq ($(CONFIG_DEVICE_MODULES_MEDIATEK_MT6577_AUXADC), n)
+ifneq ($(CONFIG_MEDIATEK_MT6577_AUXADC), n)
 obj-$(CCCI_OBJ) += ccci_auxadc.o
 endif
 
@@ -110,7 +110,7 @@ obj-$(CCCI_OBJ) += ccci_all.o
 ccci_all-$(CCCI_OBJ) := ccci_core.o ccci_bm.o ccci_modem.o modem_sys1.o
 
 
-ifneq ($(CONFIG_DEVICE_MODULES_MEDIATEK_MT6577_AUXADC), n)
+ifneq ($(CONFIG_MEDIATEK_MT6577_AUXADC), n)
 ccci_all-$(CCCI_OBJ) += ccci_auxadc.o
 endif
 

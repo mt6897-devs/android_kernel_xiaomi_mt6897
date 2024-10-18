@@ -6,7 +6,7 @@
 #include <dt-bindings/gce/mt6989-gce.h>
 
 #include "cmdq-util.h"
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_ARM_SMMU_V3)
+#if IS_ENABLED(CONFIG_ARM_SMMU_V3)
 #include <mtk-smmu-v3.h>
 #endif
 

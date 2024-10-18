@@ -21,9 +21,9 @@ mediatek-dummy-drm-y := \
 obj-$(CONFIG_DRM_MEDIATEK_DUMMY) += mediatek-dummy-drm.o
 
 
-obj-$(CONFIG_DEVICE_MODULES_DRM_MEDIATEK) += mtk_sync.o
-obj-$(CONFIG_DEVICE_MODULES_DRM_MEDIATEK) += mtk_panel_ext.o
-obj-$(CONFIG_DEVICE_MODULES_DRM_MEDIATEK) += mtk_disp_notify.o
+obj-$(CONFIG_DRM_MEDIATEK) += mtk_sync.o
+obj-$(CONFIG_DRM_MEDIATEK) += mtk_panel_ext.o
+obj-$(CONFIG_DRM_MEDIATEK) += mtk_disp_notify.o
 
 
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/scp/include/

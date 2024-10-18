@@ -41,7 +41,7 @@
 #include "pcm.h"
 #include "power.h"
 #endif
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_USB_XHCI_MTK)
+#if IS_ENABLED(CONFIG_USB_XHCI_MTK)
 #include "xhci.h"
 #include "xhci-mtk.h"
 #endif
@@ -1200,7 +1200,7 @@ static int usb_offload_prepare_msg_ext(struct usb_audio_stream_msg *msg,
 		slot_id = subs->dev->slot_id;
 		ep = usb_pipe_endpoint(subs->dev, subs->data_endpoint->pipe);
 		if (ep) {
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_USB_XHCI_MTK)
+#if IS_ENABLED(CONFIG_USB_XHCI_MTK)
 			ep_id = xhci_get_endpoint_index_(&ep->desc);
 #else
 			ep_id = xhci_get_endpoint_index(&ep->desc);
@@ -1751,7 +1751,7 @@ static int xhci_mtk_usb_offload_alloc_segments_for_ring(struct xhci_hcd *xhci,
 			}
 			return -ENOMEM;
 		}
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_USB_XHCI_MTK)
+#if IS_ENABLED(CONFIG_USB_XHCI_MTK)
 		xhci_link_segments_(prev, next, type, chain_links);
 #else
 		xhci_link_segments(prev, next, type, chain_links);
@@ -1759,7 +1759,7 @@ static int xhci_mtk_usb_offload_alloc_segments_for_ring(struct xhci_hcd *xhci,
 		prev = next;
 		num_segs--;
 	}
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_USB_XHCI_MTK)
+#if IS_ENABLED(CONFIG_USB_XHCI_MTK)
 	xhci_link_segments_(prev, *first, type, chain_links);
 #else
 	xhci_link_segments(prev, *first, type, chain_links);
@@ -1779,7 +1779,7 @@ static void xhci_mtk_link_rings(struct xhci_hcd *xhci, struct xhci_ring *ring,
 			  (xhci->quirks & XHCI_AMD_0x96_HOST)));
 
 	next = ring->enq_seg->next;
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_USB_XHCI_MTK)
+#if IS_ENABLED(CONFIG_USB_XHCI_MTK)
 	xhci_link_segments_(ring->enq_seg, first, ring->type, chain_links);
 	xhci_link_segments_(last, next, ring->type, chain_links);
 #else
@@ -1887,7 +1887,7 @@ static int xhci_mtk_ring_expansion(struct xhci_hcd *xhci,
 	}
 	new_seg->next = NULL;
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_USB_XHCI_MTK)
+#if IS_ENABLED(CONFIG_USB_XHCI_MTK)
 	xhci_link_segments_(new_seg, new_seg, ring->type, chain_links);
 #else
 	xhci_link_segments(new_seg, new_seg, ring->type, chain_links);

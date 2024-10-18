@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0
 
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MEDIATEK) += clk-common.o
-clk-common-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MEDIATEK) += clk-mtk.o clk-pll.o clk-gate.o clk-apmixed.o clk-cpumux.o reset.o clk-mux.o clkchk.o clk-fmeter.o mtk-pd-chk.o clkdbg.o
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MEDIATEK) += clk-disable-unused.o
+obj-$(CONFIG_COMMON_CLK_MEDIATEK) += clk-common.o
+clk-common-$(CONFIG_COMMON_CLK_MEDIATEK) += clk-mtk.o clk-pll.o clk-gate.o clk-apmixed.o clk-cpumux.o reset.o clk-mux.o clkchk.o clk-fmeter.o mtk-pd-chk.o clkdbg.o
+obj-$(CONFIG_COMMON_CLK_MEDIATEK) += clk-disable-unused.o
 
 obj-$(CONFIG_COMMON_CLK_MT6765) += clk-mt6765.o
 obj-$(CONFIG_COMMON_CLK_MT6765_AUDIOSYS) += clk-mt6765-audio.o
@@ -93,19 +93,6 @@ obj-$(CONFIG_COMMON_CLK_MT8186_MMSYS) += clk-mt8186-mm.o
 obj-$(CONFIG_COMMON_CLK_MT8186_VDECSYS) += clk-mt8186-vdec.o
 obj-$(CONFIG_COMMON_CLK_MT8186_VENCSYS) += clk-mt8186-venc.o
 obj-$(CONFIG_COMMON_CLK_MT8186_WPESYS) += clk-mt8186-wpe.o
-obj-$(CONFIG_COMMON_CLK_MT8192) += clk-mt8192.o
-obj-$(CONFIG_COMMON_CLK_MT8192_AUDSYS) += clk-mt8192-aud.o
-obj-$(CONFIG_COMMON_CLK_MT8192_CAMSYS) += clk-mt8192-cam.o
-obj-$(CONFIG_COMMON_CLK_MT8192_IMGSYS) += clk-mt8192-img.o
-obj-$(CONFIG_COMMON_CLK_MT8192_IMP_IIC_WRAP) += clk-mt8192-imp_iic_wrap.o
-obj-$(CONFIG_COMMON_CLK_MT8192_IPESYS) += clk-mt8192-ipe.o
-obj-$(CONFIG_COMMON_CLK_MT8192_MDPSYS) += clk-mt8192-mdp.o
-obj-$(CONFIG_COMMON_CLK_MT8192_MFGCFG) += clk-mt8192-mfg.o
-obj-$(CONFIG_COMMON_CLK_MT8192_MMSYS) += clk-mt8192-mm.o
-obj-$(CONFIG_COMMON_CLK_MT8192_MSDC) += clk-mt8192-msdc.o
-obj-$(CONFIG_COMMON_CLK_MT8192_SCP_ADSP) += clk-mt8192-scp_adsp.o
-obj-$(CONFIG_COMMON_CLK_MT8192_VDECSYS) += clk-mt8192-vdec.o
-obj-$(CONFIG_COMMON_CLK_MT8192_VENCSYS) += clk-mt8192-venc.o
 obj-$(CONFIG_COMMON_CLK_MT8195) += clk-mt8195-apmixedsys.o clk-mt8195-topckgen.o \
 				   clk-mt8195-peri_ao.o clk-mt8195-infra_ao.o \
 				   clk-mt8195-cam.o clk-mt8195-ccu.o clk-mt8195-img.o \
@@ -208,24 +195,24 @@ obj-$(CONFIG_COMMON_CLK_MT6989_MDPSYS) += clk-mt6989-mdpsys.o
 obj-$(CONFIG_COMMON_CLK_MT6989_VLP) += clk-mt6989-vlp.o
 obj-$(CONFIG_COMMON_CLK_MT6989_VCODEC) += clk-mt6989-vcodec.o
 endif
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MT8192) += clk-mt8192.o clk-bringup.o
+obj-$(CONFIG_COMMON_CLK_MT8192) += clk-mt8192.o clk-bringup.o
 obj-$(CONFIG_COMMON_CLK_MT8192_APU0) += clk-mt8192-apu0.o
 obj-$(CONFIG_COMMON_CLK_MT8192_APU1) += clk-mt8192-apu1.o
 obj-$(CONFIG_COMMON_CLK_MT8192_APU_VCORE) += clk-mt8192-apu_vcore.o
 obj-$(CONFIG_COMMON_CLK_MT8192_APU_CONN) += clk-mt8192-apu_conn.o
 obj-$(CONFIG_COMMON_CLK_MT8192_APU_MDLA0) += clk-mt8192-apu_mdla0.o
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MT8192_AUDSYS) += clk-mt8192-aud.o
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MT8192_CAMSYS) += clk-mt8192-cam.o
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MT8192_IMGSYS) += clk-mt8192-img.o
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MT8192_IMP_IIC_WRAP) += clk-mt8192-imp_iic_wrap.o
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MT8192_IPESYS) += clk-mt8192-ipe.o
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MT8192_MDPSYS) += clk-mt8192-mdp.o
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MT8192_MFGCFG) += clk-mt8192-mfg.o
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MT8192_MMSYS) += clk-mt8192-mm.o
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MT8192_MSDC) += clk-mt8192-msdc.o
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MT8192_SCP_ADSP) += clk-mt8192-scp_adsp.o
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MT8192_VDECSYS) += clk-mt8192-vdec.o
-obj-$(CONFIG_DEVICE_MODULES_COMMON_CLK_MT8192_VENCSYS) += clk-mt8192-venc.o
+obj-$(CONFIG_COMMON_CLK_MT8192_AUDSYS) += clk-mt8192-aud.o
+obj-$(CONFIG_COMMON_CLK_MT8192_CAMSYS) += clk-mt8192-cam.o
+obj-$(CONFIG_COMMON_CLK_MT8192_IMGSYS) += clk-mt8192-img.o
+obj-$(CONFIG_COMMON_CLK_MT8192_IMP_IIC_WRAP) += clk-mt8192-imp_iic_wrap.o
+obj-$(CONFIG_COMMON_CLK_MT8192_IPESYS) += clk-mt8192-ipe.o
+obj-$(CONFIG_COMMON_CLK_MT8192_MDPSYS) += clk-mt8192-mdp.o
+obj-$(CONFIG_COMMON_CLK_MT8192_MFGCFG) += clk-mt8192-mfg.o
+obj-$(CONFIG_COMMON_CLK_MT8192_MMSYS) += clk-mt8192-mm.o
+obj-$(CONFIG_COMMON_CLK_MT8192_MSDC) += clk-mt8192-msdc.o
+obj-$(CONFIG_COMMON_CLK_MT8192_SCP_ADSP) += clk-mt8192-scp_adsp.o
+obj-$(CONFIG_COMMON_CLK_MT8192_VDECSYS) += clk-mt8192-vdec.o
+obj-$(CONFIG_COMMON_CLK_MT8192_VENCSYS) += clk-mt8192-venc.o
 ifneq ($(wildcard $(srctree)/$(src)/clk-mt8188.c),)
 obj-$(CONFIG_COMMON_CLK_MT8188) += clk-mt8188.o  clk-bringup.o
 obj-$(CONFIG_COMMON_CLK_MT8188_AUDSYS_SRC) += clk-mt8188-audio_src.o

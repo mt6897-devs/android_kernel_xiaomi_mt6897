@@ -79,7 +79,7 @@ const struct mau_config_info *mtk_iommu_get_mau_config(
 	enum mtk_iommu_type type, int id,
 	unsigned int slave, unsigned int mau);
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_ARM_SMMU_V3)
+#if IS_ENABLED(CONFIG_ARM_SMMU_V3)
 int mtk_smmu_set_ops(const struct mtk_smmu_ops *ops);
 
 void report_custom_smmu_fault(u64 fault_iova, u64 fault_pa,
@@ -91,7 +91,7 @@ void mtk_smmu_ste_cd_info_dump(struct seq_file *s, u32 smmu_type, u32 sid);
 void mtk_smmu_pgtable_dump(struct seq_file *s, u32 smmu_type, bool dump_rawdata);
 void mtk_smmu_pgtable_ops_dump(struct seq_file *s, struct io_pgtable_ops *ops);
 u64 mtk_smmu_iova_to_iopte(struct io_pgtable_ops *ops, u64 iova);
-#else /* CONFIG_DEVICE_MODULES_ARM_SMMU_V3 */
+#else /* CONFIG_ARM_SMMU_V3 */
 static inline int mtk_smmu_set_ops(const struct mtk_smmu_ops *ops)
 {
 	return 0;
@@ -126,5 +126,5 @@ static inline u64 mtk_smmu_iova_to_iopte(struct io_pgtable_ops *ops, u64 iova)
 {
 	return 0;
 }
-#endif /* CONFIG_DEVICE_MODULES_ARM_SMMU_V3 */
+#endif /* CONFIG_ARM_SMMU_V3 */
 #endif /* IOMMU_DEBUG_H */

@@ -24,7 +24,7 @@ struct smi_disp_ops {
 	int (*disp_put)(void);
 };
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_SMI)
+#if IS_ENABLED(CONFIG_MTK_SMI)
 
 int mtk_smi_set_disp_ops(const struct smi_disp_ops *ops);
 int mtk_smi_dbg_register_notifier(struct notifier_block *nb);
@@ -74,7 +74,7 @@ static inline s32 smi_monitor_stop(struct device *dev, u32 common_id,
 	return 0;
 }
 
-#endif /* CONFIG_DEVICE_MODULES_MTK_SMI */
+#endif /* CONFIG_MTK_SMI */
 
 #endif /* __MTK_SMI_DEBUG_H */
 

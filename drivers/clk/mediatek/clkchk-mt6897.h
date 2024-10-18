@@ -139,7 +139,7 @@ extern void set_subsys_reg_dump_mt6897(enum chk_sys_id id[]);
 extern void get_subsys_reg_dump_mt6897(void);
 extern u32 get_mt6897_reg_value(u32 id, u32 ofs);
 extern void release_mt6897_hwv_secure(void);
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 extern void dump_clk_event(void);
 #endif
 

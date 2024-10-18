@@ -72,7 +72,7 @@ static int usb_dp_selector_switch_set(struct typec_switch_dev *sw,
 		if (uds->is_dp == true) {
 			/* We should clr this bit, since dp-4lane can not work with U3  */
 			uds_clrbits(uds->selector_reg_address, (1 << 19));
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_DRM_MEDIATEK)
+#if IS_ENABLED(CONFIG_DRM_MEDIATEK)
 			mtk_dp_SWInterruptSet(0x2);
 #endif
 			uds->dp_sw_connect = false;
@@ -84,13 +84,13 @@ static int usb_dp_selector_switch_set(struct typec_switch_dev *sw,
 		switch (uds->uds_ver) {
 		case uds_V1:
 			uds_clrbits(uds->selector_reg_address, (1 << 11));
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_DRM_MEDIATEK)
+#if IS_ENABLED(CONFIG_DRM_MEDIATEK)
 			mtk_dp_aux_swap_enable(true);
 #endif
 			break;
 		case uds_V2:
 			uds_clrbits(uds->selector_reg_address, (1 << 18));
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_DRM_MEDIATEK)
+#if IS_ENABLED(CONFIG_DRM_MEDIATEK)
 			mtk_dp_aux_swap_enable(true);
 #endif
 			break;
@@ -103,13 +103,13 @@ static int usb_dp_selector_switch_set(struct typec_switch_dev *sw,
 		switch (uds->uds_ver) {
 		case uds_V1:
 			uds_setbits(uds->selector_reg_address, (1 << 11));
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_DRM_MEDIATEK)
+#if IS_ENABLED(CONFIG_DRM_MEDIATEK)
 			mtk_dp_aux_swap_enable(false);
 #endif
 			break;
 		case uds_V2:
 			uds_setbits(uds->selector_reg_address, (1 << 18));
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_DRM_MEDIATEK)
+#if IS_ENABLED(CONFIG_DRM_MEDIATEK)
 			mtk_dp_aux_swap_enable(false);
 #endif
 			break;
@@ -167,7 +167,7 @@ static int usb_dp_selector_mux_set(struct typec_mux_dev *mux,
 				break;
 			case uds_V2:
 				uds_setbits(uds->selector_reg_address, (1 << 19));
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_DRM_MEDIATEK)
+#if IS_ENABLED(CONFIG_DRM_MEDIATEK)
 				mtk_dp_set_pin_assign(dp_data->conf);
 #endif
 				break;
@@ -183,7 +183,7 @@ static int usb_dp_selector_mux_set(struct typec_mux_dev *mux,
 				break;
 			case uds_V2:
 				uds_clrbits(uds->selector_reg_address, (1 << 19));
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_DRM_MEDIATEK)
+#if IS_ENABLED(CONFIG_DRM_MEDIATEK)
 				mtk_dp_set_pin_assign(dp_data->conf);
 #endif
 				break;
@@ -209,7 +209,7 @@ static int usb_dp_selector_mux_set(struct typec_mux_dev *mux,
 
 		/* Call DP API */
 		dev_info(uds->dev, "[%s][%d]\n", __func__, __LINE__);
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_DRM_MEDIATEK)
+#if IS_ENABLED(CONFIG_DRM_MEDIATEK)
 		if (state) {
 			if (irq) {
 				if (uds->dp_sw_connect == false) {

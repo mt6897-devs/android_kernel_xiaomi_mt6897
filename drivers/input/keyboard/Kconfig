@@ -818,9 +818,9 @@ config KEYBOARD_MTK_KPD
 	  To compile this driver as a module, choose M here: the
 	  module will be called mtk-kpd.
 
-config DEVICE_MODULES_KEYBOARD_MTK_PMIC
+config KEYBOARD_MTK_PMIC
 	tristate "MediaTek PMIC keys support"
-	depends on DEVICE_MODULES_MFD_MT6397 || COMPILE_TEST
+	depends on MFD_MT6397 || COMPILE_TEST
 	help
 	  Say Y here if you want to use the pmic keys (powerkey/homekey).
 

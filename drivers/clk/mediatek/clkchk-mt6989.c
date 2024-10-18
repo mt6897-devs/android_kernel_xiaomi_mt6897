@@ -14,7 +14,7 @@
 
 #include <dt-bindings/power/mt6989-power.h>
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 #include <devapc_public.h>
 #endif
 
@@ -2566,7 +2566,7 @@ void print_subsys_reg_mt6989(enum chk_sys_id id)
 }
 EXPORT_SYMBOL_GPL(print_subsys_reg_mt6989);
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 static enum chk_sys_id devapc_dump_id[] = {
 	spm,
 	hfrp,
@@ -2972,7 +2972,7 @@ static int clk_chk_mt6989_probe(struct platform_device *pdev)
 
 	set_clkchk_ops(&clkchk_mt6989_ops);
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 	register_devapc_vio_callback(&devapc_vio_handle);
 	register_devapc_vio_callback(&serror_handle);
 #endif

@@ -228,7 +228,7 @@ static const struct mtk_vdisp_funcs funcs = {
 	.vlp_disp_vote = mtk_vdisp_vlp_disp_vote,
 };
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_SMI)
+#if IS_ENABLED(CONFIG_MTK_SMI)
 static int mtk_smi_disp_get(void)
 {
 	mtk_vdisp_vlp_disp_vote(DISP_VIDLE_USER_SMI_DUMP, true);
@@ -312,7 +312,7 @@ static int mtk_vdisp_probe(struct platform_device *pdev)
 	pm_runtime_get(dev);
 	mtk_vdisp_register(&funcs);
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_SMI)
+#if IS_ENABLED(CONFIG_MTK_SMI)
 	mtk_smi_set_disp_ops(&smi_funcs);
 #endif
 

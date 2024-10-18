@@ -11,8 +11,8 @@ system_heap-objs := \
         mtk_cache_pool.o \
         mtk_dmabuf_monitor.o \
         mtk-deferred-free-helper.o
-obj-$(CONFIG_DEVICE_MODULES_DMABUF_HEAPS_SYSTEM)        += system_heap.o
-obj-$(CONFIG_DEVICE_MODULES_DMABUF_HEAPS_REFILL)        += mtk_heap_refill.o
+obj-$(CONFIG_DMABUF_HEAPS_SYSTEM)        += system_heap.o
+obj-$(CONFIG_DMABUF_HEAPS_REFILL)        += mtk_heap_refill.o
 
 ccflags-y += -I$(srctree)/drivers/iommu/
 ccflags-y += -I$(srctree)/drivers/iommu/arm/arm-smmu-v3/

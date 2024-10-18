@@ -2,29 +2,29 @@
 # Core
 obj-$(CONFIG_PINCTRL_MTK)      += pinctrl-mtk-common.o
 obj-$(CONFIG_PINCTRL_MTK_MOORE) += pinctrl-moore.o
-ifeq ($(CONFIG_DEVICE_MODULES_EINT_MTK),m)
+ifeq ($(CONFIG_EINT_MTK),m)
 obj-m += pinctrl-mtk-v2.o
-else ifeq ($(CONFIG_DEVICE_MODULES_PINCTRL_MTK_V2),m)
+else ifeq ($(CONFIG_PINCTRL_MTK_V2),m)
 obj-m += pinctrl-mtk-v2.o
-else ifeq ($(CONFIG_DEVICE_MODULES_PINCTRL_MTK_PARIS),m)
+else ifeq ($(CONFIG_PINCTRL_MTK_PARIS),m)
 obj-m += pinctrl-mtk-v2.o
 endif
 
-ifeq ($(CONFIG_DEVICE_MODULES_EINT_MTK),y)
+ifeq ($(CONFIG_EINT_MTK),y)
 obj-y += mtk-eint.o
-else ifeq ($(CONFIG_DEVICE_MODULES_EINT_MTK),m)
+else ifeq ($(CONFIG_EINT_MTK),m)
 pinctrl-mtk-v2-y += mtk-eint.o
 endif
 
-ifeq ($(CONFIG_DEVICE_MODULES_PINCTRL_MTK_V2),y)
+ifeq ($(CONFIG_PINCTRL_MTK_V2),y)
 obj-y += pinctrl-mtk-common-v2.o
-else ifeq ($(CONFIG_DEVICE_MODULES_PINCTRL_MTK_V2),m)
+else ifeq ($(CONFIG_PINCTRL_MTK_V2),m)
 pinctrl-mtk-v2-y += pinctrl-mtk-common-v2.o
 endif
 
-ifeq ($(CONFIG_DEVICE_MODULES_PINCTRL_MTK_PARIS),y)
+ifeq ($(CONFIG_PINCTRL_MTK_PARIS),y)
 obj-y += pinctrl-paris.o pinctrl-mtk-common-v2_debug.o
-else ifeq ($(CONFIG_DEVICE_MODULES_PINCTRL_MTK_PARIS),m)
+else ifeq ($(CONFIG_PINCTRL_MTK_PARIS),m)
 pinctrl-mtk-v2-y += pinctrl-paris.o
 obj-m += pinctrl-mtk-common-v2_debug.o
 endif
@@ -35,7 +35,7 @@ obj-$(CONFIG_PINCTRL_MT2712)	+= pinctrl-mt2712.o
 obj-$(CONFIG_PINCTRL_MT8135)	+= pinctrl-mt8135.o
 obj-$(CONFIG_PINCTRL_MT8127)	+= pinctrl-mt8127.o
 obj-$(CONFIG_PINCTRL_MT6765)	+= pinctrl-mt6765.o
-obj-$(CONFIG_DEVICE_MODULES_PINCTRL_MT6779)	+= pinctrl-mt6779.o
+obj-$(CONFIG_PINCTRL_MT6779)	+= pinctrl-mt6779.o
 ifneq ($(wildcard $(srctree)/$(src)/pinctrl-mt6363.c),)
 obj-$(CONFIG_PINCTRL_MT6363)	+= pinctrl-mt6363.o
 endif
@@ -58,9 +58,9 @@ ifneq ($(wildcard $(srctree)/$(src)/pinctrl-mt6989.c),)
 obj-$(CONFIG_PINCTRL_MT6989)	+= pinctrl-mt6989.o
 endif
 ifneq ($(wildcard $(srctree)/$(src)/pinctrl-mt8188.c),)
-obj-$(CONFIG_DEVICE_MODULES_PINCTRL_MT8188)	+= pinctrl-mt8188.o
+obj-$(CONFIG_PINCTRL_MT8188)	+= pinctrl-mt8188.o
 endif
-obj-$(CONFIG_DEVICE_MODULES_PINCTRL_MT8195)    += pinctrl-mt8195.o
+obj-$(CONFIG_PINCTRL_MT8195)    += pinctrl-mt8195.o
 obj-$(CONFIG_PINCTRL_MT6795)	+= pinctrl-mt6795.o
 obj-$(CONFIG_PINCTRL_MT6797)	+= pinctrl-mt6797.o
 obj-$(CONFIG_PINCTRL_MT7622)	+= pinctrl-mt7622.o

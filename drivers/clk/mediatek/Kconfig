@@ -5,7 +5,7 @@
 menu "Clock driver for MediaTek SoC"
 	depends on ARM || ARM64 || COMPILE_TEST
 
-config DEVICE_MODULES_COMMON_CLK_MEDIATEK
+config COMMON_CLK_MEDIATEK
 	tristate
 	select RESET_CONTROLLER
 	help
@@ -642,86 +642,6 @@ config COMMON_CLK_MT8186_VENCSYS
 	help
 	  This driver supports MediaTek MT8186 vencsys clocks.
 
-config COMMON_CLK_MT8192
-	bool "Clock driver for MediaTek MT8192"
-	depends on ARM64 || COMPILE_TEST
-	select COMMON_CLK_MEDIATEK
-	default ARM64
-	help
-	  This driver supports MediaTek MT8192 basic clocks.
-
-config COMMON_CLK_MT8192_AUDSYS
-	bool "Clock driver for MediaTek MT8192 audsys"
-	depends on COMMON_CLK_MT8192
-	help
-	  This driver supports MediaTek MT8192 audsys clocks.
-
-config COMMON_CLK_MT8192_CAMSYS
-	bool "Clock driver for MediaTek MT8192 camsys"
-	depends on COMMON_CLK_MT8192
-	help
-	  This driver supports MediaTek MT8192 camsys and camsys_raw clocks.
-
-config COMMON_CLK_MT8192_IMGSYS
-	bool "Clock driver for MediaTek MT8192 imgsys"
-	depends on COMMON_CLK_MT8192
-	help
-	  This driver supports MediaTek MT8192 imgsys and imgsys2 clocks.
-
-config COMMON_CLK_MT8192_IMP_IIC_WRAP
-	bool "Clock driver for MediaTek MT8192 imp_iic_wrap"
-	depends on COMMON_CLK_MT8192
-	help
-	  This driver supports MediaTek MT8192 imp_iic_wrap clocks.
-
-config COMMON_CLK_MT8192_IPESYS
-	bool "Clock driver for MediaTek MT8192 ipesys"
-	depends on COMMON_CLK_MT8192
-	help
-	  This driver supports MediaTek MT8192 ipesys clocks.
-
-config COMMON_CLK_MT8192_MDPSYS
-	bool "Clock driver for MediaTek MT8192 mdpsys"
-	depends on COMMON_CLK_MT8192
-	help
-	  This driver supports MediaTek MT8192 mdpsys clocks.
-
-config COMMON_CLK_MT8192_MFGCFG
-	bool "Clock driver for MediaTek MT8192 mfgcfg"
-	depends on COMMON_CLK_MT8192
-	help
-	  This driver supports MediaTek MT8192 mfgcfg clocks.
-
-config COMMON_CLK_MT8192_MMSYS
-	bool "Clock driver for MediaTek MT8192 mmsys"
-	depends on COMMON_CLK_MT8192
-	help
-	  This driver supports MediaTek MT8192 mmsys clocks.
-
-config COMMON_CLK_MT8192_MSDC
-	bool "Clock driver for MediaTek MT8192 msdc"
-	depends on COMMON_CLK_MT8192
-	help
-	  This driver supports MediaTek MT8192 msdc and msdc_top clocks.
-
-config COMMON_CLK_MT8192_SCP_ADSP
-	bool "Clock driver for MediaTek MT8192 scp_adsp"
-	depends on COMMON_CLK_MT8192
-	help
-	  This driver supports MediaTek MT8192 scp_adsp clocks.
-
-config COMMON_CLK_MT8192_VDECSYS
-	bool "Clock driver for MediaTek MT8192 vdecsys"
-	depends on COMMON_CLK_MT8192
-	help
-	  This driver supports MediaTek MT8192 vdecsys and vdecsys_soc clocks.
-
-config COMMON_CLK_MT8192_VENCSYS
-	bool "Clock driver for MediaTek MT8192 vencsys"
-	depends on COMMON_CLK_MT8192
-	help
-	  This driver supports MediaTek MT8192 vencsys clocks.
-
 config COMMON_CLK_MT8195
         bool "Clock driver for MediaTek MT8195"
         depends on ARM64 || COMPILE_TEST
@@ -797,7 +717,7 @@ config COMMON_CLK_MT8516_AUDSYS
 config COMMON_CLK_MT6853
 	tristate "Clock driver for MediaTek MT6853"
 	depends on ARM64 || COMPILE_TEST
-	select DEVICE_MODULES_COMMON_CLK_MEDIATEK
+	select COMMON_CLK_MEDIATEK
 	default MACH_MT6853
 	help
 	  This driver supports MediaTek MT6853 basic clocks,
@@ -1015,7 +935,7 @@ config COMMON_CLK_MT6853_VENC_GCON
 config COMMON_CLK_MT6886
 	tristate "Clock driver for MediaTek MT6886"
 	depends on ARM64 || COMPILE_TEST
-	select DEVICE_MODULES_COMMON_CLK_MEDIATEK
+	select COMMON_CLK_MEDIATEK
 	default MACH_MT6886
 	help
 	  This driver supports MediaTek MT6886 basic clocks,
@@ -1116,7 +1036,7 @@ config COMMON_CLK_MT6886_VCODEC
 config COMMON_CLK_MT6897
 	tristate "Clock driver for MediaTek MT6897"
 	depends on ARM64 || COMPILE_TEST
-	select DEVICE_MODULES_COMMON_CLK_MEDIATEK
+	select COMMON_CLK_MEDIATEK
 	default MACH_MT6897
 	help
 	  This driver supports MediaTek MT6897 basic clocks,
@@ -1217,7 +1137,7 @@ config COMMON_CLK_MT6897_VCODEC
 config COMMON_CLK_MT6983
 	tristate "Clock driver for MediaTek MT6983"
 	depends on ARM64 || COMPILE_TEST
-	select DEVICE_MODULES_COMMON_CLK_MEDIATEK
+	select COMMON_CLK_MEDIATEK
 	help
 	  This driver supports MediaTek MT6983 basic clocks,
 	  which is used to control basic clock output.
@@ -1308,7 +1228,7 @@ config COMMON_CLK_MT6983_VCODEC
 config COMMON_CLK_MT6985
 	tristate "Clock driver for MediaTek MT6985"
 	depends on ARM64 || COMPILE_TEST
-	select DEVICE_MODULES_COMMON_CLK_MEDIATEK
+	select COMMON_CLK_MEDIATEK
 	default MACH_MT6985
 	help
 	  This driver supports MediaTek MT6985 basic clocks,
@@ -1409,7 +1329,7 @@ config COMMON_CLK_MT6985_VCODEC
 config COMMON_CLK_MT6989
 	tristate "Clock driver for MediaTek MT6989"
 	depends on ARM64 || COMPILE_TEST
-	select DEVICE_MODULES_COMMON_CLK_MEDIATEK
+	select COMMON_CLK_MEDIATEK
 	default MACH_MT6989
 	help
 	  This driver supports MediaTek MT6989 basic clocks,
@@ -1498,16 +1418,16 @@ config COMMON_CLK_MT6989_VCODEC
 	  If you wish to use clock resources from the vcodec device,
 	  say Y. Otherwise, say N.
 
-config DEVICE_MODULES_COMMON_CLK_MT8192
+config COMMON_CLK_MT8192
 	tristate "Clock driver for MediaTek MT8192"
 	depends on ARM64 || COMPILE_TEST
-	select DEVICE_MODULES_COMMON_CLK_MEDIATEK
+	select COMMON_CLK_MEDIATEK
 	help
 	  This driver supports MediaTek MT8192 basic clocks.
 
 config COMMON_CLK_MT8192_APU0
 	tristate "Clock driver for MediaTek MT8192 apu0"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 apu0 clocks.
           required on MediaTek MT8192 SoC.
@@ -1516,7 +1436,7 @@ config COMMON_CLK_MT8192_APU0
 
 config COMMON_CLK_MT8192_APU1
 	tristate "Clock driver for MediaTek MT8192 apu1"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 apu1 clocks.
           required on MediaTek MT8192 SoC.
@@ -1525,7 +1445,7 @@ config COMMON_CLK_MT8192_APU1
 
 config COMMON_CLK_MT8192_APU_VCORE
 	tristate "Clock driver for MediaTek MT8192 apu_vcore"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 apu_vcore clocks.
           required on MediaTek MT8192 SoC.
@@ -1534,7 +1454,7 @@ config COMMON_CLK_MT8192_APU_VCORE
 
 config COMMON_CLK_MT8192_APU_CONN
 	tristate "Clock driver for MediaTek MT8192 apu_conn"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 apu_conn clocks.
           required on MediaTek MT8192 SoC.
@@ -1543,89 +1463,89 @@ config COMMON_CLK_MT8192_APU_CONN
 
 config COMMON_CLK_MT8192_APU_MDLA0
 	tristate "Clock driver for MediaTek MT8192 apu_mdla0"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 apu_mdla0 clocks.
           required on MediaTek MT8192 SoC.
           If you wish to use clock resources from the MT8192 SOC,
           say Y. Otherwise, say N.
 
-config DEVICE_MODULES_COMMON_CLK_MT8192_AUDSYS
+config COMMON_CLK_MT8192_AUDSYS
 	tristate "Clock driver for MediaTek MT8192 audsys"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 audsys clocks.
 
-config DEVICE_MODULES_COMMON_CLK_MT8192_CAMSYS
+config COMMON_CLK_MT8192_CAMSYS
 	tristate "Clock driver for MediaTek MT8192 camsys"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 camsys and camsys_raw clocks.
 
-config DEVICE_MODULES_COMMON_CLK_MT8192_IMGSYS
+config COMMON_CLK_MT8192_IMGSYS
 	tristate "Clock driver for MediaTek MT8192 imgsys"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 imgsys and imgsys2 clocks.
 
-config DEVICE_MODULES_COMMON_CLK_MT8192_IMP_IIC_WRAP
+config COMMON_CLK_MT8192_IMP_IIC_WRAP
 	tristate "Clock driver for MediaTek MT8192 imp_iic_wrap"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 imp_iic_wrap clocks.
 
-config DEVICE_MODULES_COMMON_CLK_MT8192_IPESYS
+config COMMON_CLK_MT8192_IPESYS
 	tristate "Clock driver for MediaTek MT8192 ipesys"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 ipesys clocks.
 
-config DEVICE_MODULES_COMMON_CLK_MT8192_MDPSYS
+config COMMON_CLK_MT8192_MDPSYS
 	tristate "Clock driver for MediaTek MT8192 mdpsys"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 mdpsys clocks.
 
-config DEVICE_MODULES_COMMON_CLK_MT8192_MFGCFG
+config COMMON_CLK_MT8192_MFGCFG
 	tristate "Clock driver for MediaTek MT8192 mfgcfg"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 mfgcfg clocks.
 
-config DEVICE_MODULES_COMMON_CLK_MT8192_MMSYS
+config COMMON_CLK_MT8192_MMSYS
 	tristate "Clock driver for MediaTek MT8192 mmsys"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 mmsys clocks.
 
-config DEVICE_MODULES_COMMON_CLK_MT8192_MSDC
+config COMMON_CLK_MT8192_MSDC
 	tristate "Clock driver for MediaTek MT8192 msdc"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 msdc and msdc_top clocks.
 
-config DEVICE_MODULES_COMMON_CLK_MT8192_SCP_ADSP
+config COMMON_CLK_MT8192_SCP_ADSP
 	tristate "Clock driver for MediaTek MT8192 scp_adsp"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 scp_adsp clocks.
 
-config DEVICE_MODULES_COMMON_CLK_MT8192_VDECSYS
+config COMMON_CLK_MT8192_VDECSYS
 	tristate "Clock driver for MediaTek MT8192 vdecsys"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 vdecsys and vdecsys_soc clocks.
 
-config DEVICE_MODULES_COMMON_CLK_MT8192_VENCSYS
+config COMMON_CLK_MT8192_VENCSYS
 	tristate "Clock driver for MediaTek MT8192 vencsys"
-	depends on DEVICE_MODULES_COMMON_CLK_MT8192
+	depends on COMMON_CLK_MT8192
 	help
 	  This driver supports MediaTek MT8192 vencsys clocks.
 
 config COMMON_CLK_MT8188
 	tristate "Clock driver for MediaTek MT8188"
 	depends on ARM64 || COMPILE_TEST
-	select DEVICE_MODULES_COMMON_CLK_MEDIATEK
+	select COMMON_CLK_MEDIATEK
 	help
 	  This driver supports MediaTek MT8188 basic clocks.
 	  which is used to control basic clock output.

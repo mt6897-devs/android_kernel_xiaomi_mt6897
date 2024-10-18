@@ -503,7 +503,7 @@ struct msdc_host {
 	int cmd_rsp;
 
 	spinlock_t lock;
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MMC_DEBUG)
+#if IS_ENABLED(CONFIG_MMC_DEBUG)
 	spinlock_t log_lock;
 #endif
 	struct mmc_request *mrq;

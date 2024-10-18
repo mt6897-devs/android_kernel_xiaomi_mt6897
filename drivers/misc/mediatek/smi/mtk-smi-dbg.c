@@ -26,7 +26,7 @@
 #include "clk-mtk.h"
 #include "mmdvfs_v3.h"
 //#include <dt-bindings/memory/mtk-smi-larb-port.h>
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_ARM_SMMU_V3)
+#if IS_ENABLED(CONFIG_ARM_SMMU_V3)
 #include <mtk-smmu-v3.h>
 #endif
 
@@ -964,7 +964,7 @@ static void init_smi_dbg_setting(struct mtk_smi_dbg	*smi)
 
 }
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_ARM_SMMU_V3)
+#if IS_ENABLED(CONFIG_ARM_SMMU_V3)
 static const struct mtk_pm_ops mtk_smi_pm_ops = {
 	.pm_get = mtk_smi_mminfra_get_if_in_use,
 	.pm_put = mtk_smi_mminfra_put,
@@ -1061,7 +1061,7 @@ static int mtk_smi_dbg_probe(struct platform_device *dbg_pdev)
 	smi->suspend_nb.notifier_call = smi_dbg_suspend_cb;
 	mtk_smi_driver_register_notifier(&smi->suspend_nb);
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_ARM_SMMU_V3)
+#if IS_ENABLED(CONFIG_ARM_SMMU_V3)
 	if (smmu_v3_enabled() && !of_property_read_bool(dev->of_node, "hwccf-support"))
 		mtk_smmu_set_pm_ops(MM_SMMU, &mtk_smi_pm_ops);
 	else

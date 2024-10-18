@@ -37,7 +37,7 @@ int spm_common_dbg_dump(void)
 	int ret = 0;
 
 	if (mtk_suspend_debug_flag & MTK_DUMP_GPIO) {
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_PINCTRL_MTK_PARIS)
+#if IS_ENABLED(CONFIG_PINCTRL_MTK_PARIS)
 		gpio_dump_regs();
 #else
 		pr_info("[LPM] gpio dump not supported.\n");

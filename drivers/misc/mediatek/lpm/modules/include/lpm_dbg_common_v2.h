@@ -201,7 +201,7 @@ void lpm_dbg_pm_exit(void);
 
 int spm_common_dbg_dump(void);
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_PINCTRL_MTK_PARIS)
+#if IS_ENABLED(CONFIG_PINCTRL_MTK_PARIS)
 extern void gpio_dump_regs(void);
 #endif
 

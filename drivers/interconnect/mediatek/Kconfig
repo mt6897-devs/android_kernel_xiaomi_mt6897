@@ -25,7 +25,7 @@ config INTERCONNECT_MTK_MMQOS_COMMON
 config INTERCONNECT_MTK_MMQOS_MT6873
 	tristate "Mediatek MT6873 MMQoS interconnect driver"
 	depends on INTERCONNECT_MTK
-	depends on DEVICE_MODULES_MTK_SMI
+	depends on MTK_SMI
 	select INTERCONNECT_MTK_MMQOS_COMMON
 	help
 	  Support MT6873 multimedia QoS.
@@ -33,7 +33,7 @@ config INTERCONNECT_MTK_MMQOS_MT6873
 config INTERCONNECT_MTK_MMQOS_MT6853
 	tristate "Mediatek MT6853 MMQoS interconnect driver"
 	depends on INTERCONNECT_MTK
-	depends on DEVICE_MODULES_MTK_SMI
+	depends on MTK_SMI
 	select INTERCONNECT_MTK_MMQOS_COMMON
 	help
 	  Support MT6853 multimedia QoS.
@@ -41,7 +41,7 @@ config INTERCONNECT_MTK_MMQOS_MT6853
 config INTERCONNECT_MTK_MMQOS_MT6886
 	tristate "Mediatek MT6886 MMQoS interconnect driver"
 	depends on INTERCONNECT_MTK
-	depends on DEVICE_MODULES_MTK_SMI
+	depends on MTK_SMI
 	select INTERCONNECT_MTK_MMQOS_COMMON
 	help
 	  Support MT6886 for multimedia QoS in Mediatek's SoCs.
@@ -53,7 +53,7 @@ config INTERCONNECT_MTK_MMQOS_MT6886
 config INTERCONNECT_MTK_MMQOS_MT6897
 	tristate "Mediatek MT6897 MMQoS interconnect driver"
 	depends on INTERCONNECT_MTK
-	depends on DEVICE_MODULES_MTK_SMI
+	depends on MTK_SMI
 	select INTERCONNECT_MTK_MMQOS_COMMON
 	help
 	  Support MT6897 for multimedia QoS in Mediatek's SoCs.
@@ -65,7 +65,7 @@ config INTERCONNECT_MTK_MMQOS_MT6897
 config INTERCONNECT_MTK_MMQOS_MT6983
 	tristate "Mediatek MT6983 MMQoS interconnect driver"
 	depends on INTERCONNECT_MTK
-	depends on DEVICE_MODULES_MTK_SMI
+	depends on MTK_SMI
 	select INTERCONNECT_MTK_MMQOS_COMMON
 	help
 	  Support MT6983 multimedia QoS.
@@ -73,7 +73,7 @@ config INTERCONNECT_MTK_MMQOS_MT6983
 config INTERCONNECT_MTK_MMQOS_MT6985
 	tristate "Mediatek MT6985 MMQoS interconnect driver"
 	depends on INTERCONNECT_MTK
-	depends on DEVICE_MODULES_MTK_SMI
+	depends on MTK_SMI
 	select INTERCONNECT_MTK_MMQOS_COMMON
 	help
 	  Support MT6985 multimedia QoS.
@@ -82,7 +82,7 @@ config MTK_MMQOS_VCP
 	tristate "MediaTek MMQOS VCP Support"
 	depends on ARCH_MEDIATEK || COMPILE_TEST
 	depends on INTERCONNECT_MTK
-	depends on DEVICE_MODULES_MTK_SMI
+	depends on MTK_SMI
 	help
 	  Say yes here to add support for the MediaTek Multimedia QoS (MMQOS)
 	  for Video Control Processor (VCP). The MMQOS is used to set bw
@@ -93,7 +93,7 @@ config MTK_MMQOS_VCP
 config INTERCONNECT_MTK_MMQOS_MT6989
 	tristate "Mediatek MT6989 MMQoS interconnect driver"
 	depends on INTERCONNECT_MTK
-	depends on DEVICE_MODULES_MTK_SMI
+	depends on MTK_SMI
 	select INTERCONNECT_MTK_MMQOS_COMMON
 	help
 	  Support MT6989 for multimedia QoS in Mediatek's SoCs.

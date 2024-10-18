@@ -10,7 +10,7 @@
 #if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 #include <mt-plat/aee.h>
 #endif
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 #include <linux/soc/mediatek/devapc_public.h>
 #endif
 #if IS_ENABLED(CONFIG_MTK_EMI)
@@ -521,7 +521,7 @@ int md_fsm_exp_info(unsigned int channel_id)
 }
 EXPORT_SYMBOL(md_fsm_exp_info);
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 atomic_t pw_off_disable_dapc_ke;
 atomic_t md_dapc_ke_occurred;
 atomic_t en_flight_timeout; /* enter flight mode timeout && devapc occurred */
@@ -633,20 +633,20 @@ static struct devapc_vio_callbacks devapc_md_vio_handle = {
 void fsm_ee_cmd_init(enum CCCI_FSM_COMMAND cmd_id)
 {
 	s_is_normal_mdee = 0;
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 	s_devapc_dump_counter = 0;
 #endif
 
 	switch (cmd_id) {
 	case CCCI_COMMAND_START:
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 		atomic_set(&pw_off_disable_dapc_ke, 0);
 		atomic_set(&md_dapc_ke_occurred, 0);
 #endif
 		atomic_set(&en_flight_timeout, 0);
 		break;
 	case CCCI_COMMAND_STOP:
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 		atomic_set(&pw_off_disable_dapc_ke, 1);
 #endif
 		break;
@@ -660,7 +660,7 @@ void fsm_ee_cmd_deinit(enum CCCI_FSM_COMMAND cmd_id)
 {
 	switch (cmd_id) {
 	case CCCI_COMMAND_STOP:
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 		if (atomic_read(&md_dapc_ke_occurred) && atomic_read(&en_flight_timeout)) {
 			CCCI_ERROR_LOG(0, FSM,
 				"md_dapc_ke_occurred and en_flight_timeout, bug_on\n");
@@ -689,7 +689,7 @@ int fsm_ee_init(struct ccci_fsm_ee *ee_ctl)
 	else if (md->hw_info->plat_val->md_gen  == 6291)
 		ret = mdee_dumper_v2_alloc(ee_ctl);
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 	register_devapc_vio_callback(&devapc_md_vio_handle);
 #endif
 

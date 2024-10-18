@@ -3303,7 +3303,7 @@ static int msdc_drv_probe(struct platform_device *pdev)
 		mmc->max_seg_size = 64 * 1024;
 	}
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MMC_DEBUG)
+#if IS_ENABLED(CONFIG_MMC_DEBUG)
 	spin_lock_init(&host->log_lock);
 #endif
 
@@ -3328,7 +3328,7 @@ static int msdc_drv_probe(struct platform_device *pdev)
 	if (ret)
 		goto end;
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MMC_DEBUG)
+#if IS_ENABLED(CONFIG_MMC_DEBUG)
 	ret = mmc_dbg_register(mmc);
 #endif
 

@@ -14,7 +14,7 @@
 
 #include <dt-bindings/power/mt6897-power.h>
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 #include <devapc_public.h>
 #endif
 
@@ -1256,7 +1256,7 @@ OUT:
 	spin_unlock_irqrestore(&clk_trace_lock, flags);
 }
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 void dump_clk_event(void)
 {
 	unsigned long flags = 0;
@@ -2139,7 +2139,7 @@ void print_subsys_reg_mt6897(enum chk_sys_id id)
 }
 EXPORT_SYMBOL_GPL(print_subsys_reg_mt6897);
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 static enum chk_sys_id devapc_dump_id[] = {
 	spm,
 	top,
@@ -2377,7 +2377,7 @@ static struct clkchk_ops clkchk_mt6897_ops = {
 	.get_vf_opp = get_vf_opp,
 	.get_vf_num = get_vf_num,
 	.get_vcore_opp = get_vcore_opp,
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 	.devapc_dump = devapc_dump,
 #endif
 	.dump_hwv_history = dump_hwv_history,
@@ -2399,7 +2399,7 @@ static int clk_chk_mt6897_probe(struct platform_device *pdev)
 
 	set_clkchk_ops(&clkchk_mt6897_ops);
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 	register_devapc_vio_callback(&devapc_vio_handle);
 	register_devapc_vio_callback(&serror_handle);
 #endif

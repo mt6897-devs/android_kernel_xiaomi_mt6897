@@ -1030,7 +1030,7 @@ config MMC_MTK
 
 config MMC_MTK_PRO
 	tristate "MediaTek SD/MMC Card Proprietary Interface support"
-	depends on !DEVICE_MODULES_MMC_MTK
+	depends on !MMC_MTK
 	help
 	  This selects the MediaTek(R) Secure digital and Multimedia card
 	  Interface. If you have a machine with a integrated SD/MMC card

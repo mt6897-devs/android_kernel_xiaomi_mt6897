@@ -194,7 +194,7 @@ extern int mrdump_mini_add_extra_file(unsigned long vaddr, unsigned long paddr,
 #if IS_ENABLED(CONFIG_MTK_IRQ_DBG)
 extern void mt_irq_dump_status(unsigned int irq);
 #endif
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_MTK_DEVAPC)
+#if IS_ENABLED(CONFIG_MTK_DEVAPC)
 extern atomic_t en_flight_timeout;
 extern atomic_t md_dapc_ke_occurred;
 #endif

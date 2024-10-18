@@ -12,7 +12,7 @@ subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/scp/include
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/scp/rv
 
 # common driver
-obj-$(CONFIG_DEVICE_MODULES_SND_SOC_MEDIATEK) += snd-soc-mtk-common.o
+obj-$(CONFIG_SND_SOC_MEDIATEK) += snd-soc-mtk-common.o
 snd-soc-mtk-common-objs += mtk-afe-platform-driver.o mtk-afe-fe-dai.o mtk-mmap-ion.o mtk-usb-offload-ops.o
 snd-soc-mtk-common-$(CONFIG_MTK_ECCCI_DRIVER) += mtk-usip.o
 snd-soc-mtk-common-$(CONFIG_SND_SOC_MTK_SRAM) += mtk-sram-manager.o
@@ -25,4 +25,4 @@ obj-m += mtk-afe-external.o
 obj-m += mtk-sp-spk-amp.o
 
 # BT CVSD driver
-obj-$(CONFIG_DEVICE_MODULES_SND_SOC_MTK_BTCVSD) += mtk-btcvsd.o
+obj-$(CONFIG_SND_SOC_MTK_BTCVSD) += mtk-btcvsd.o

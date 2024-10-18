@@ -24,16 +24,16 @@ config DMABUF_HEAPS_CMA
 	  by the Contiguous Memory Allocator (CMA). If your system has these
 	  regions, you should say Y here.
 
-config DEVICE_MODULES_DMABUF_HEAPS_SYSTEM
+config DMABUF_HEAPS_SYSTEM
         tristate "DMA-BUF System Heap"
         depends on DMABUF_HEAPS
         help
           Choose this option to enable the system dmabuf heap. The system heap
           is backed by pages from the buddy allocator. If in doubt, say Y.
 
-config DEVICE_MODULES_DMABUF_HEAPS_REFILL
+config DMABUF_HEAPS_REFILL
         tristate "DMA-BUF heap refill"
-        depends on DEVICE_MODULES_DMABUF_HEAPS_SYSTEM
+        depends on DMABUF_HEAPS_SYSTEM
         help
           Choose this option to enable heap refill. Pool has high water and low
           water. After executing dmabuf alloc and detecting that the current pool
@@ -43,7 +43,7 @@ config DEVICE_MODULES_DMABUF_HEAPS_REFILL
 
 config DMABUF_HEAPS_DEBUG
         tristate "DMA-BUF debug Heap"
-        depends on DEVICE_MODULES_DMABUF_HEAPS_SYSTEM
+        depends on DMABUF_HEAPS_SYSTEM
         help
           Choose this option to enable the mtk debug heap.
           This debug tool can be use to dump dmabuf usage for users

@@ -809,7 +809,7 @@ const struct mau_config_info *mtk_iommu_get_mau_config(
 }
 EXPORT_SYMBOL_GPL(mtk_iommu_get_mau_config);
 
-#if IS_ENABLED(CONFIG_DEVICE_MODULES_ARM_SMMU_V3)
+#if IS_ENABLED(CONFIG_ARM_SMMU_V3)
 static const struct mtk_smmu_ops *smmu_ops;
 
 int mtk_smmu_set_ops(const struct mtk_smmu_ops *ops)
@@ -1456,7 +1456,7 @@ u64 mtk_smmu_iova_to_iopte(struct io_pgtable_ops *ops, u64 iova)
 	return arm_lpae_iova_to_iopte(ops, iova);
 }
 EXPORT_SYMBOL_GPL(mtk_smmu_iova_to_iopte);
-#else /* CONFIG_DEVICE_MODULES_ARM_SMMU_V3 */
+#else /* CONFIG_ARM_SMMU_V3 */
 static inline int mtk_smmu_power_get(u32 smmu_type)
 {
 	return -1;
@@ -1466,7 +1466,7 @@ static inline int mtk_smmu_power_put(u32 smmu_type)
 {
 	return -1;
 }
-#endif /* CONFIG_DEVICE_MODULES_ARM_SMMU_V3 */
+#endif /* CONFIG_ARM_SMMU_V3 */
 
 /* peri_iommu */
 static struct peri_iommu_data mt6983_peri_iommu_data[PERI_IOMMU_NUM] = {
