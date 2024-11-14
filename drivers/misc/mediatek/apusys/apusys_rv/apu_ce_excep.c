@@ -12,7 +12,9 @@
 #include <linux/module.h>
 #include <linux/timer.h>
 
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 #include <mt-plat/aee.h>
+#endif
 
 #include "apu.h"
 #include "apu_ce_excep.h"
@@ -177,7 +179,9 @@ static void apu_ce_coredump_work_func(struct work_struct *p_work)
 
 		apu_regdump();
 
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 		apusys_ce_exception_aee_warn(get_ce_job_name_by_id(exception_job_id));
+#endif
 
 		exception_job_id = -1;
 	}
