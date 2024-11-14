@@ -20,8 +20,8 @@
 #include <linux/workqueue.h>
 
 #include "extcon-mtk-usb.h"
-#include "../../../power/supply/mtk_charger.h"
-#include "../../../power/supply/pd_cp_manager.h"
+#include "../../../power/supply/mediatek/mtk_charger.h"
+#include "../../../power/supply/mediatek/pd_cp_manager.h"
 
 #if IS_ENABLED(CONFIG_TCPC_CLASS)
 #include "tcpm.h"
