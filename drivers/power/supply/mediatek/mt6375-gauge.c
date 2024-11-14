@@ -1103,7 +1103,9 @@ static int instant_current(struct mtk_gauge *gauge, int *val,
 
 	if (latch_timeout) {
 		pr_notice("[%s] read cic1 with external 32k failed\n", __func__);
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 		aee_kernel_warning("BATTERY", "read cic1 failed");
+#endif
 
 		ret = iio_read_channel_attribute(gauge->chan_ptim_bat_voltage,
 						 &vbat_p, &ibat_p, IIO_CHAN_INFO_PROCESSED);
