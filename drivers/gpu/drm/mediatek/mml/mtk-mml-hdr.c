@@ -1105,10 +1105,12 @@ static void hdr_histogram_check(struct mml_comp *comp, struct mml_task *task, u3
 				__func__, task->pq_task->hdr_hist[pipe]->va[offset/4+56],
 				task->pq_task->hdr_hist[pipe]->va[offset/4+i+57]);
 
+			#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 			if (mml_pq_debug_mode & MML_PQ_HIST_CHECK)
 				mml_pq_util_aee("MML_PQ_HDR_Histogram Error",
 					"HDR Histogram error need to check jobid:%d",
 					task->job.jobid);
+			#endif
 	}
 }
 
@@ -1419,10 +1421,12 @@ static void hdr_ir_histogram_check(struct mml_comp_hdr *hdr)
 				__func__, hdr->hdr_hist[pipe]->va[56],
 				hdr->hdr_hist[pipe]->va[57]);
 
+			#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 			if (mml_pq_debug_mode & MML_PQ_HIST_CHECK)
 				mml_pq_util_aee("MML_PQ_HDR_Histogram Error",
 					"HDR Histogram error need to check jobid:%d",
 					hdr->jobid);
+			#endif
 	}
 }
 

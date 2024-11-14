@@ -854,7 +854,10 @@ static void tdshp_task_done_readback(struct mml_comp *comp, struct mml_task *tas
 	struct mml_frame_dest *dest = &cfg->info.dest[ccfg->node->out_idx];
 	struct mml_comp_tdshp *tdshp = comp_to_tdshp(comp);
 	u8 pipe = ccfg->pipe;
-	u32 offset = 0, i = 0;
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
+	u32 offset i = 0;
+#endif
+	u32 offset = 0;
 
 	mml_pq_trace_ex_begin("%s comp[%d]", __func__, comp->id);
 	mml_pq_msg("%s clarity_readback[%d] id[%d] en_sharp[%d] tdshp_hist[%lx]", __func__,
@@ -916,6 +919,7 @@ static void tdshp_task_done_readback(struct mml_comp *comp, struct mml_task *tas
 	}
 
 	if (tdshp_frm->is_dc_need_readback) {
+		#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 		if (mml_pq_debug_mode & MML_PQ_HIST_CHECK) {
 			for (i = 0; i < TDSHP_CONTOUR_HIST_NUM; i++)
 				if (task->pq_task->tdshp_hist[pipe]->va[offset/4+i] >
@@ -924,6 +928,7 @@ static void tdshp_task_done_readback(struct mml_comp *comp, struct mml_task *tas
 						"CONTOUR Histogram error need to check jobid:%d",
 						task->job.jobid);
 		}
+		#endif
 		mml_pq_dc_readback(task, ccfg->pipe,
 			&(task->pq_task->tdshp_hist[pipe]->va[offset/4+0]));
 	}
