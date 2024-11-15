@@ -49,7 +49,9 @@ static unsigned int cmd_hist_cnt;
 static unsigned int cmd_hist_ptr = MAX_CMD_HIST_ENTRY_CNT - 1;
 static struct cmd_hist_struct *cmd_hist;
 static struct ufs_hba *ufshba;
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 static char *ufs_aee_buffer;
+#endif
 
 #if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 #include <mt-plat/aee.h>
@@ -57,6 +59,7 @@ static char *ufs_aee_buffer;
 
 extern void mt_irq_dump_status(unsigned int irq);
 
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 void ufs_mtk_eh_abort(unsigned int tag)
 {
 	static int ufs_abort_aee_count;
@@ -68,6 +71,7 @@ void ufs_mtk_eh_abort(unsigned int tag)
 	}
 }
 EXPORT_SYMBOL_GPL(ufs_mtk_eh_abort);
+#endif
 
 void ufs_mtk_eh_unipro_set_lpm(struct ufs_hba *hba, int ret)
 {
@@ -86,9 +90,11 @@ void ufs_mtk_eh_unipro_set_lpm(struct ufs_hba *hba, int ret)
 			 __func__, val);
 	}
 
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 	ufs_mtk_aee_warning(
 		"Set 0xD0A8 timeout, ret=%d, ret2=%d, 0xD0A8=%d",
 		ret, ret2, val);
+#endif
 }
 EXPORT_SYMBOL_GPL(ufs_mtk_eh_unipro_set_lpm);
 
@@ -112,12 +118,14 @@ void ufs_mtk_eh_err_cnt(void)
 		err_count++;
 	}
 
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 	/*
 	 * Most uic error is recoverable, it should be minor.
 	 * Only dump db if uic error heppen frequently(>=6) in 72 hrs.
 	 */
 	if (err_count >= 6)
 		ufs_mtk_aee_warning("Error Dump %d", err_count);
+#endif
 }
 EXPORT_SYMBOL_GPL(ufs_mtk_eh_err_cnt);
 
@@ -2048,6 +2056,7 @@ void ufs_mtk_dbg_dump(u32 latest_cnt)
 }
 EXPORT_SYMBOL_GPL(ufs_mtk_dbg_dump);
 
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 void ufs_mtk_dbg_get_aee_buffer(unsigned long *vaddr, unsigned long *size)
 {
 	unsigned long free_size = UFS_AEE_BUFFER_SIZE;
@@ -2075,6 +2084,7 @@ void ufs_mtk_dbg_get_aee_buffer(unsigned long *vaddr, unsigned long *size)
 	ufs_mtk_dbg_cmd_hist_enable();
 }
 EXPORT_SYMBOL_GPL(ufs_mtk_dbg_get_aee_buffer);
+#endif
 
 #ifndef USER_BUILD_KERNEL
 #define PROC_PERM		0660
@@ -2207,11 +2217,13 @@ int ufs_mtk_dbg_register(struct ufs_hba *hba)
 {
 	int ret;
 
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 	/*
 	 * Ignore any failure of AEE buffer allocation to still allow
 	 * command history dump in procfs.
 	 */
 	ufs_aee_buffer = kzalloc(UFS_AEE_BUFFER_SIZE, GFP_NOFS);
+#endif
 
 	spin_lock_init(&cmd_hist_lock);
 	ufshba = hba;

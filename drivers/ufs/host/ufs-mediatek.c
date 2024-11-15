@@ -2702,8 +2702,10 @@ static void ufs_mtk_event_notify(struct ufs_hba *hba,
 		ufs_mtk_dbg_register_dump(hba);
 	}
 
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 	if (evt == UFS_EVT_ABORT)
 		ufs_mtk_eh_abort(val);
+#endif
 
 }
 
