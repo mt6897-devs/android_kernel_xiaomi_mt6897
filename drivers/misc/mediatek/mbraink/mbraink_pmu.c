@@ -33,6 +33,7 @@ static u64 cpu7_pmu_data_inst_spec;
 static void __iomem *csram_base;
 static void __iomem *pmu_tcm_base;
 
+#if IS_ENABLED(CONFIG_MTK_LPM_MT6989)
 static struct timer_list timer_inst_spec;
 
 static void timer_inst_spect_update_func(struct timer_list *timer)
@@ -44,6 +45,7 @@ static void timer_inst_spect_update_func(struct timer_list *timer)
 	if (ret)
 		pr_notice("timer_inst_spec fired failed!\n");
 }
+#endif
 
 void init_pmu_keep_data(void)
 {
@@ -80,6 +82,7 @@ void uninit_pmu_keep_data(void)
 #endif
 }
 
+#if IS_ENABLED(CONFIG_MTK_LPM_MT6989)
 static void set_pmu_enable(unsigned int enable)
 {
 	if (IS_ERR_OR_NULL((void *)csram_base))
@@ -89,6 +92,7 @@ static void set_pmu_enable(unsigned int enable)
 	/* make sure register access in order */
 	wmb();
 }
+#endif
 
 u64 get_cpu_pmu(int cpu, u32 offset)
 {

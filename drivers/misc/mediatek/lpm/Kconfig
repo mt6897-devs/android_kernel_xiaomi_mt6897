@@ -14,6 +14,20 @@ config MTK_LPM_DBG_COMMON
 	  feature will support basic debug control and show the
 	  information to console.
 
+config MTK_LOW_POWER_MODULE_DEBUG_V1
+        bool "Meditaek Low Power Module Debug V1"
+	default n
+	help
+	  This macro define if mtk-lpm-dbg-common-v1.o need to be built.
+	  Say n if unsure.
+
+config MTK_LOW_POWER_MODULE_DEBUG_V2
+	bool "Meditaek Low Power Module Debug V2"
+	depends on !MTK_LOW_POWER_MODULE_DEBUG_V1
+	default y
+	help
+	  This macro define if mtk-lpm-dbg-common-v2.o need to be built.
+	  Say n if unsure.
 
 config MTK_LPM_GS_DUMP_SUPPORT
 	bool "Meditaek Low Power golden setting checker"

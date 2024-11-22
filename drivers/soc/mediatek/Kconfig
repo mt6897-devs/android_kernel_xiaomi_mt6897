@@ -59,6 +59,14 @@ config MTK_SCPSYS
 	  Say yes here to add support for the MediaTek SCPSYS power domain
 	  driver.
 
+config MTK_SCPSYS_DUMMY
+	tristate "MediaTek SCPSYS Dummy Support"
+	select REGMAP
+	select PM_GENERIC_DOMAINS if PM
+	help
+	  Say yes here to add support for the MediaTek SCPSYS power domain
+	  driver.
+
 config MTK_SCPSYS_PM_DOMAINS
 	tristate "MediaTek SCPSYS generic power domain"
 	default ARCH_MEDIATEK
