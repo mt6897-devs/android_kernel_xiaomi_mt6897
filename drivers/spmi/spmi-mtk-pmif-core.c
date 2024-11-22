@@ -1411,11 +1411,13 @@ static irqreturn_t spmi_nack_irq_handler(int irq, void *data)
 	pr_notice("%s SPMI_DEC_DBG m/p:0x%x/0x%x\n", __func__, spmi_debug_nack, spmi_p_debug_nack);
 	pr_notice("%s SPMI_MST_DBG m/p:0x%x/0x%x\n", __func__, spmi_mst_nack, spmi_p_mst_nack);
 
+#if (IS_ENABLED(CONFIG_MTK_AEE_FEATURE))
 	if (flag) {
 		/* trigger AEE event*/
 		if (IS_ENABLED(CONFIG_MTK_AEE_FEATURE))
 			aee_kernel_warning("SPMI", "SPMI:transaction_fail");
 	}
+#endif
 	/* clear irq*/
 	if ((spmi_nack & 0xF8) || (spmi_rcs_nack & 0xC0000) ||
 		(spmi_debug_nack & 0xF0000) || (spmi_mst_nack & 0xC0000)) {
