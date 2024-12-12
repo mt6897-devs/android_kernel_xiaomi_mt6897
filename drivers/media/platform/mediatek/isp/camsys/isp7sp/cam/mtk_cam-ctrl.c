@@ -1245,7 +1245,9 @@ SWITCH_FAILURE:
 	dev_info(dev, "[%s] failed: ctx-%d job %d frame_seq 0x%x\n",
 		 __func__, ctx->stream_id, job->req_seq, job->frame_seq_no);
 
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 	WRAP_AEE_EXCEPTION(MSG_SWITCH_FAILURE, __func__);
+#endif
 }
 
 static void mtk_cam_ctrl_raw_switch_flow(struct mtk_cam_job *job)
@@ -1906,7 +1908,9 @@ static void mtk_cam_watchdog_sensor_worker(struct work_struct *work)
 	vsync_collector_dump(&ctrl->vsync_col);
 
 	mtk_cam_event_error(ctrl, MSG_VSYNC_TIMEOUT);
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 	WRAP_AEE_EXCEPTION(MSG_VSYNC_TIMEOUT, "watchdog timeout");
+#endif
 
 EXIT_WORK:
 	complete(&wd->work_complete);

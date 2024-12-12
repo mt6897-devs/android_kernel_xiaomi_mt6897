@@ -877,7 +877,9 @@ static void raw_handle_ringbuffer_ofl(struct mtk_raw_device *raw_dev,
 		 readl_relaxed(raw_dev->base + REG_CAMRAWDMATOP_DC_DBG_LINE_CNT_RAWI_R5),
 		 readl_relaxed(raw_dev->base + REG_CAMRAWDMATOP_DC_DBG_LINE_CNT_UFDI_R5));
 
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 	WRAP_AEE_EXCEPTION(MSG_RINGBUFFER_OFL, dev_name(raw_dev->dev));
+#endif
 }
 
 static bool is_sub_sample_sensor_timing(struct mtk_raw_device *dev)

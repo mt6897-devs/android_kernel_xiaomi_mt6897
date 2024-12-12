@@ -1985,7 +1985,9 @@ static void trigger_error_dump(struct mtk_cam_job *job,
 		job_dump_engines_debug_status(job);
 
 		mtk_cam_event_error(&ctx->cam_ctrl, desc);
+	#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 		WRAP_AEE_EXCEPTION(desc, warn_desc);
+	#endif
 	}
 }
 
