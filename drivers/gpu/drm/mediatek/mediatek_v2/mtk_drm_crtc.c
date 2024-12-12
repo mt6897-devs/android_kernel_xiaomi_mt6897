@@ -130,7 +130,9 @@ struct timer_list cmdq_timer;
 static int cmdq_cnt = 0;
 bool tigger_esd = false;
 #define CMDQ_TIMEOUT_CNT 5
+#if IS_ENABLED(CONFIG_MTK_HANG_DETECT)
 extern bool will_swt(void);
+#endif
 #endif
 
 bool hdr_en;
@@ -6368,10 +6370,12 @@ static void mtk_crtc_cmdq_timeout_cb(struct cmdq_cb_data data)
 		}
 	}
 
+#if IS_ENABLED(CONFIG_MTK_HANG_DETECT)
 	if(will_swt()) {
 		del_timer(&cmdq_timer);
 		BUG();
 	}
+#endif
 #endif
 
 #ifndef DRM_CMDQ_DISABLE
