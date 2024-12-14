@@ -4,8 +4,9 @@
 ###############################################################################
 # Necessary Check
 
-CFG_FM_PLAT := mt6631_6635
-CFG_FM_CHIP_ID := 6789
+CFG_FM_CHIP := mt6635
+CFG_FM_PLAT := connac2x
+CFG_BUILD_CONNAC2 := true
 
 ifneq ($(KERNEL_OUT),)
     ccflags-y += -imacros $(KERNEL_OUT)/include/generated/autoconf.h
@@ -148,8 +149,8 @@ else
 endif
 
 
-ccflags-y += -I$(KO_CODE_PATH)/../../inc \
-             -I$(KO_CODE_PATH)/../../plat/inc
+ccflags-y += -I$(KO_CODE_PATH)/inc \
+             -I$(KO_CODE_PATH)/plat/inc
 
 $(FM_CHIP)-objs    += core/fm_module.o \
                 core/fm_main.o \
