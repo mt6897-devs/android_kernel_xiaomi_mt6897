@@ -165,3 +165,5 @@ config MTK_GPU_DIAGNOSIS_DEBUG
 	  If this config is set to Y, config nodes for gpu error hook and DB
 	  dump level are available.
 	  This is a config to decide exported debug function.
+
+source "drivers/gpu/mediatek/mali-avalon/base/arm/Kconfig"

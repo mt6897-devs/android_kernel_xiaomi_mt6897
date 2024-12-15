@@ -31,3 +31,4 @@ obj-$(CONFIG_MTK_GPU_SUPPORT) += gpufreq/
 obj-$(CONFIG_MTK_GPU_SUPPORT) += gpu_bm/
 obj-$(CONFIG_MTK_GPU_SUPPORT) += gpueb/
 obj-$(CONFIG_MTK_GPU_SUPPORT) += gpu_iommu/
+obj-$(CONFIG_MTK_GPU_SUPPORT) += mali-avalon/
