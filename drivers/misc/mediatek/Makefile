@@ -92,6 +92,6 @@ obj-$(CONFIG_MTK_IPS_HELPER) += ips/
 obj-$(CONFIG_MI_CAMLOG) += cam_log/
 
 subdir-ccflags-y += -D__XIAOMI_CAMERA__
-ifeq ($(CONFIG_BUILD_XIAOMI_CAMERA_IMAGE_NAMES),"duchamp")
+ifeq ($(CONFIG_BUILD_PRODUCT_NAME),"duchamp")
 subdir-ccflags-y += -DDUCHAMP_CAM
 endif

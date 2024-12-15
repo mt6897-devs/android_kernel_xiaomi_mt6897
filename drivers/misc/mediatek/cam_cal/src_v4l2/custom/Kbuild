@@ -18,7 +18,7 @@ subdir-ccflags-y += -I$(MTK_CUSTOM_PATH)/imgsensor/inc \
 
 # XIAOMI ADD
 subdir-ccflags-y += -D__XIAOMI_CAMERA__
-ifeq ($(CONFIG_BUILD_XIAOMI_CAMERA_IMAGE_NAMES),"duchamp")
+ifeq ($(CONFIG_BUILD_PRODUCT_NAME),"duchamp")
 subdir-ccflags-y += -DDUCHAMP_CAM
 endif
 # XIAOMI END
