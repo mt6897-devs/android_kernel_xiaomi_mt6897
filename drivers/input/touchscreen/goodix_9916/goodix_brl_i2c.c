@@ -218,10 +218,9 @@ err_pdev:
 	return ret;
 }
 
-static int goodix_i2c_remove(struct i2c_client *client)
+static void goodix_i2c_remove(struct i2c_client *client)
 {
 	platform_device_unregister(goodix_pdev);
-	return 0;
 }
 
 #ifdef CONFIG_OF

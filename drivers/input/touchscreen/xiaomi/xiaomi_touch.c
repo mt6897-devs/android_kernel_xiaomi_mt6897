@@ -1309,7 +1309,7 @@ static int xiaomi_touch_probe(struct platform_device *pdev)
 	pdata->raw_head = 0;
 	pdata->raw_tail = 0;
 	pdata->phy_base = virt_to_phys(pdata->raw_data);
-	pr_info("%s: kernel base:%lld, phy base:%lld\n", __func__,	(unsigned long)pdata->raw_data, (unsigned long)pdata->phy_base);
+	pr_info("%s: kernel base:%lu, phy base:%lu\n", __func__,	(unsigned long)pdata->raw_data, (unsigned long)pdata->phy_base);
 	spin_lock_init(&pdata->raw_lock);
 	ret = xiaomi_touch_parse_dt(dev, pdata);
 	if (ret < 0) {

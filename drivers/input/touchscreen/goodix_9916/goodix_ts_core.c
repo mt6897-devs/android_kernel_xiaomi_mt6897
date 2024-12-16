@@ -1116,7 +1116,7 @@ exit:
 
 static int rawdata_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open_size(file, rawdata_proc_show, PDE_DATA(inode), PAGE_SIZE * 10);
+	return single_open_size(file, rawdata_proc_show, proc_get_parent_data(inode), PAGE_SIZE * 10);
 }
 
 static const struct proc_ops rawdata_proc_fops = {
@@ -1156,7 +1156,7 @@ exit:
 
 static int framedata_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open_size(file, framedata_proc_show, PDE_DATA(inode), PAGE_SIZE * 10);
+	return single_open_size(file, framedata_proc_show, proc_get_parent_data(inode), PAGE_SIZE * 10);
 }
 
 static const struct proc_ops framedata_proc_fops = {
@@ -2400,7 +2400,7 @@ int goodix_drm_state_change_callback(struct notifier_block *self,
 
 	if (evdata && evdata->data && core_data) {
 		blank = *(int *)(evdata->data);
-		ts_info("notifier tp event:%d, code:%d.", event, blank);
+		ts_info("notifier tp event:%lu, code:%d.", event, blank);
 		flush_workqueue(core_data->event_wq);
 		if ((event == MI_DISP_DPMS_EARLY_EVENT || event == MI_DISP_DPMS_EVENT)
 			&& (blank == MI_DISP_DPMS_POWERDOWN || blank == MI_DISP_DPMS_LP1 || blank == MI_DISP_DPMS_LP2)) {

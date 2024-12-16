@@ -2865,7 +2865,7 @@ static int auto_test_result_show(struct seq_file *m, void *v)
 static int auto_test_open(struct inode *inode, struct file *file)
 {
 	return single_open_size(file, auto_test_result_show,
-			PDE_DATA(inode), DEFAULT_SEQ_FILE_SIZE);
+			proc_get_parent_data(inode), DEFAULT_SEQ_FILE_SIZE);
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0))
