@@ -735,8 +735,5 @@ void inspect_module_exit(void);
 int goodix_tools_init(void);
 void goodix_tools_exit(void);
 int goodix_get_rawdata(struct device *dev, struct ts_rawdata_info *info);
-#ifdef GOODIX_FOD_AREA_REPORT
-extern int mi_disp_set_fod_queue_work(u32 fod_btn, bool from_touch);
-#endif
 
 #endif

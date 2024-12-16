@@ -978,7 +978,6 @@ static ssize_t goodix_fod_test_store(struct device *dev,
 		input_report_abs(cd->input_dev, ABS_MT_WIDTH_MINOR, 10);
 		input_sync(cd->input_dev);
 		update_fod_press_status(1);
-		mi_disp_set_fod_queue_work(1, true);
 		cd->fod_finger = true;
 	} else {
 		input_report_key(cd->input_dev, BTN_INFO, 0);
@@ -994,7 +993,6 @@ static ssize_t goodix_fod_test_store(struct device *dev,
 		input_report_key(cd->input_dev, BTN_TOOL_FINGER, 0);
 		input_sync(cd->input_dev);
 		update_fod_press_status(0);
-		mi_disp_set_fod_queue_work(0, true);
 	}
 	return count;
 }
@@ -1461,7 +1459,6 @@ static void goodix_ts_report_finger(struct input_dev *dev,
 			input_report_key(dev, BTN_INFO, 1);
 			input_sync(dev);
 			update_fod_press_status(1);
-			mi_disp_set_fod_queue_work(1, true);
 			ts_info("fod finger is %d",goodix_core_data->fod_finger);
 			goto finger_pos;
 	} else if ((goodix_core_data->eventsdata & 0x08) != 0x08 && goodix_core_data->fod_finger) {
@@ -1472,7 +1469,6 @@ static void goodix_ts_report_finger(struct input_dev *dev,
 			input_report_abs(dev, ABS_MT_WIDTH_MINOR, 0);
 			input_sync(dev);
 			update_fod_press_status(0);
-			mi_disp_set_fod_queue_work(0, true);
 			goodix_core_data->fod_finger = false;
 			ts_info("fod finger is %d",goodix_core_data->fod_finger);
 			goto finger_pos;
@@ -1521,7 +1517,6 @@ finger_pos:
 			input_report_abs(dev, ABS_MT_WIDTH_MINOR, 0);
 			input_sync(dev);
 			update_fod_press_status(0);
-			mi_disp_set_fod_queue_work(0, true);
 			goodix_core_data->fod_finger = false;
 		}
 		cpu_latency_qos_update_request(&goodix_core_data->gtp_qos_request, PM_QOS_DEFAULT_VALUE);
@@ -2183,7 +2178,6 @@ static void goodix_ts_release_connects(struct goodix_ts_core *core_data)
 		input_report_abs(input_dev, ABS_MT_WIDTH_MINOR, 0);
 		input_sync(input_dev);
 		update_fod_press_status(0);
-		mi_disp_set_fod_queue_work(0, true);
 		ts_info("fod up");
 	}
 	for (i = 0; i < GOODIX_MAX_TOUCH; i++) {

@@ -160,7 +160,6 @@ int gsx_gesture_ist(struct goodix_ts_core *cd)
 		if (!cd->fod_finger)
 			ts_info("gesture fod down, id %d", fod_id);
 		update_fod_press_status(1);
-		mi_disp_set_fod_queue_work(1, true);
 		cd->fod_finger = true;
 		goto gesture_ist_exit;
 		break;
@@ -189,7 +188,6 @@ int gsx_gesture_ist(struct goodix_ts_core *cd)
 			input_sync(cd->input_dev);
 			ts_info("gesture fod up");
 			update_fod_press_status(0);
-			mi_disp_set_fod_queue_work(0, true);
 		}
 		break;
 #endif
