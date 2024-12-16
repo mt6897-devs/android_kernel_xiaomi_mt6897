@@ -39,8 +39,10 @@ static void __iomem *csram_base;
 u32 *g_cpufreq_debug;
 
 unsigned int cpufreq_debug_cpu;
+#if IS_ENABLED(CONFIG_MTK_SCHEDULER)
 unsigned int user_ctrl_mode;
 bool dsu_ctrl_deubg_enable;
+#endif
 
 static int cpufreq_debug_proc_show(struct seq_file *m, void *v)
 {
@@ -178,6 +180,7 @@ unsigned int cpufreq_get_cci_mode(void)
 	return mode;
 }
 
+#if IS_ENABLED(CONFIG_MTK_SCHEDULER)
 int cpufreq_set_cci_mode(unsigned int mode)
 {
 	if (mode > 1) {
@@ -217,6 +220,7 @@ int set_dsu_ctrl_debug(unsigned int eas_ctrl_mode, bool debug_enable)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(set_dsu_ctrl_debug);
+#endif
 
 static int mtk_cpudvfs_init(void)
 {
@@ -244,8 +248,10 @@ static int mtk_cpudvfs_init(void)
 		pr_notice("failed to map csram_base @ %s\n", __func__);
 		return -EINVAL;
 	}
+#if IS_ENABLED(CONFIG_MTK_SCHEDULER)
 	dsu_ctrl_deubg_enable = false;
 	user_ctrl_mode = 0;
+#endif
 
 	return 0;
 }

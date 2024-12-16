@@ -1366,20 +1366,26 @@ EXPORT_SYMBOL_GPL(mtk_vcodec_get_log);
 static void mtk_vcodec_add_list(struct task_struct *task)
 {
 	struct task_struct *task_child;
+#if IS_ENABLED(CONFIG_MTK_SCHEDULER)
 	int ret = 0;
+#endif
 
 	for_each_thread(task, task_child) {
 		if (task_child != NULL) {
+#if IS_ENABLED(CONFIG_MTK_SCHEDULER)
 			ret = set_task_to_group(task_child->pid, GROUP_ID_1);
 			if (ret == -1)
 				mtk_v4l2_err("put tid %d fail", task_child->pid);
 			else {
+#endif
 				if (group_list_size < VCODEC_MAX_GROUP_SIZE) {
 					group_list[group_list_size] = task_child->pid;
 					group_list_size ++;
 				} else
 					mtk_v4l2_err("invalid grouplist size %d", group_list_size);
+#if IS_ENABLED(CONFIG_MTK_SCHEDULER)
 			}
+#endif
 		}
 	}
 	//pr_info("update size group_list_size %d\n", group_list_size);
@@ -1407,14 +1413,18 @@ void mtk_vcodec_config_group_list(void)
 {
 	int i = 0;
 
+#if IS_ENABLED(CONFIG_MTK_SCHEDULER)
 	if (unlikely(group_get_mode() == GP_MODE_0))
 		return;
+#endif
 
 	spin_lock(&group_lock);
 	if (group_list_size != 0) {
 		//pr_info("clean group_list_size %d\n", group_list_size);
 		for (i = 0; i < group_list_size; i++) {
+#if IS_ENABLED(CONFIG_MTK_SCHEDULER)
 			set_task_to_group( group_list[i], -1);
+#endif
 			group_list[i] = 0;
 		}
 		group_list_size = 0;
