@@ -51,3 +51,8 @@ DTC_INCLUDE += $(dir $(src))
 
 # for devicetree overlay
 DTC_FLAGS += -@
+
+dtb-$(CONFIG_ARCH_MEDIATEK) += \
+	mt6897.dtb \
+	mt6985.dtb \
+	mt6989.dtb
