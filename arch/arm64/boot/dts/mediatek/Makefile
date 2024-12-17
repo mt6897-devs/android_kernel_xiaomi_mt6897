@@ -41,9 +41,13 @@ dtb-$(CONFIG_ARCH_MEDIATEK) += mt8186-evb.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt8192-asurada-hayato-r1.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt8192-asurada-spherion-r0.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt8192-evb.dtb
-dtb-$(CONFIG_ARCH_MEDIATEK) += mt8195-cherry-tomato-r1.dtb
-dtb-$(CONFIG_ARCH_MEDIATEK) += mt8195-cherry-tomato-r2.dtb
-dtb-$(CONFIG_ARCH_MEDIATEK) += mt8195-cherry-tomato-r3.dtb
-dtb-$(CONFIG_ARCH_MEDIATEK) += mt8195-demo.dtb
-dtb-$(CONFIG_ARCH_MEDIATEK) += mt8195-evb.dtb
 dtb-$(CONFIG_ARCH_MEDIATEK) += mt8516-pumpkin.dtb
+
+# arm64
+DTC_INCLUDE += $(srctree)/arch/$(SRCARCH)/boot/dts $(srctree)/arch/$(SRCARCH)/boot/dts/mediatek
+
+# for cust.dtsi
+DTC_INCLUDE += $(dir $(src))
+
+# for devicetree overlay
+DTC_FLAGS += -@
